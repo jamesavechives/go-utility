@@ -147,7 +147,7 @@ func withTrace(t *testing.T, gasLimit uint64, test func(vm.Config) error) {
 	// Test failed, re-run with tracing enabled.
 	t.Error(err)
 	if gasLimit > traceErrorLimit {
-		t.Log("gas limit too high for EVM trace")
+		t.Log("gas limit too high for UVM trace")
 		return
 	}
 	buf := new(bytes.Buffer)
@@ -159,12 +159,12 @@ func withTrace(t *testing.T, gasLimit uint64, test func(vm.Config) error) {
 	}
 	w.Flush()
 	if buf.Len() == 0 {
-		t.Log("no EVM operation logs generated")
+		t.Log("no UVM operation logs generated")
 	} else {
-		t.Log("EVM operation log:\n" + buf.String())
+		t.Log("UVM operation log:\n" + buf.String())
 	}
-	// t.Logf("EVM output: 0x%x", tracer.Output())
-	// t.Logf("EVM error: %v", tracer.Error())
+	// t.Logf("UVM output: 0x%x", tracer.Output())
+	// t.Logf("UVM error: %v", tracer.Error())
 }
 
 func BenchmarkEVM(b *testing.B) {
@@ -172,7 +172,7 @@ func BenchmarkEVM(b *testing.B) {
 	dir := benchmarksDir
 	dirinfo, err := os.Stat(dir)
 	if os.IsNotExist(err) || !dirinfo.IsDir() {
-		fmt.Fprintf(os.Stderr, "can't find test files in %s, did you clone the evm-benchmarks submodule?\n", dir)
+		fmt.Fprintf(os.Stderr, "can't find test files in %s, did you clone the uvm-benchmarks submodule?\n", dir)
 		b.Skip("missing test files")
 	}
 	err = filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
@@ -257,12 +257,12 @@ func runBenchmark(b *testing.B, t *StateTest) {
 				}
 			}
 
-			// Prepare the EVM.
+			// Prepare the UVM.
 			txContext := core.NewEVMTxContext(msg)
 			context := core.NewEVMBlockContext(block.Header(), nil, &t.json.Env.Coinbase)
 			context.GetHash = vmTestBlockHash
 			context.BaseFee = baseFee
-			evm := vm.NewEVM(context, txContext, statedb, config, vmconfig)
+			uvm := vm.NewEVM(context, txContext, statedb, config, vmconfig)
 
 			// Create "contract" for sender to cache code analysis.
 			sender := vm.NewContract(vm.AccountRef(msg.From), vm.AccountRef(msg.From),
@@ -281,7 +281,7 @@ func runBenchmark(b *testing.B, t *StateTest) {
 				start := time.Now()
 
 				// Execute the message.
-				_, leftOverGas, err := evm.Call(sender, *msg.To, msg.Data, msg.GasLimit, msg.Value)
+				_, leftOverGas, err := uvm.Call(sender, *msg.To, msg.Data, msg.GasLimit, msg.Value)
 				if err != nil {
 					b.Error(err)
 					return

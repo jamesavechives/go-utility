@@ -41,7 +41,7 @@ import (
 	"github.com/yanhuangpai/go-utility/params"
 	"github.com/yanhuangpai/go-utility/unc"
 	"github.com/yanhuangpai/go-utility/unc/downloader"
-	"github.com/yanhuangpai/go-utility/unc/ethconfig"
+	"github.com/yanhuangpai/go-utility/unc/uncconfig"
 )
 
 func main() {
@@ -71,7 +71,7 @@ func main() {
 	)
 	for _, sealer := range sealers {
 		// Start the node and wait until it's up
-		stack, ethBackend, err := makeSealer(genesis)
+		stack, uncBackend, err := makeSealer(genesis)
 		if err != nil {
 			panic(err)
 		}
@@ -86,7 +86,7 @@ func main() {
 		}
 		// Start tracking the node and its enode
 		stacks = append(stacks, stack)
-		nodes = append(nodes, ethBackend)
+		nodes = append(nodes, uncBackend)
 		enodes = append(enodes, stack.Server().Self())
 
 		// Inject the signer key and start sealing with it
@@ -200,14 +200,14 @@ func makeSealer(genesis *core.Genesis) (*node.Node, *unc.Utility, error) {
 		return nil, nil, err
 	}
 	// Create and register the backend
-	ethBackend, err := unc.New(stack, &ethconfig.Config{
+	uncBackend, err := unc.New(stack, &uncconfig.Config{
 		Genesis:         genesis,
 		NetworkId:       genesis.Config.ChainID.Uint64(),
 		SyncMode:        downloader.FullSync,
 		DatabaseCache:   256,
 		DatabaseHandles: 256,
 		TxPool:          legacypool.DefaultConfig,
-		GPO:             ethconfig.Defaults.GPO,
+		GPO:             uncconfig.Defaults.GPO,
 		Miner: miner.Config{
 			GasCeil:  genesis.GasLimit * 11 / 10,
 			GasPrice: big.NewInt(1),
@@ -219,5 +219,5 @@ func makeSealer(genesis *core.Genesis) (*node.Node, *unc.Utility, error) {
 	}
 
 	err = stack.Start()
-	return stack, ethBackend, err
+	return stack, uncBackend, err
 }

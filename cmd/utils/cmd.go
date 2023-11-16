@@ -36,12 +36,12 @@ import (
 	"github.com/yanhuangpai/go-utility/core/rawdb"
 	"github.com/yanhuangpai/go-utility/core/types"
 	"github.com/yanhuangpai/go-utility/crypto"
-	"github.com/yanhuangpai/go-utility/ethdb"
 	"github.com/yanhuangpai/go-utility/internal/debug"
 	"github.com/yanhuangpai/go-utility/log"
 	"github.com/yanhuangpai/go-utility/node"
 	"github.com/yanhuangpai/go-utility/rlp"
-	"github.com/yanhuangpai/go-utility/unc/ethconfig"
+	"github.com/yanhuangpai/go-utility/unc/uncconfig"
+	"github.com/yanhuangpai/go-utility/uncdb"
 )
 
 const (
@@ -77,7 +77,7 @@ func StartNode(ctx *cli.Context, stack *node.Node, isConsole bool) {
 		signal.Notify(sigc, syscall.SIGINT, syscall.SIGTERM)
 		defer signal.Stop(sigc)
 
-		minFreeDiskSpace := 2 * ethconfig.Defaults.TrieDirtyCache // Default 2 * 256Mb
+		minFreeDiskSpace := 2 * uncconfig.Defaults.TrieDirtyCache // Default 2 * 256Mb
 		if ctx.IsSet(MinFreeDiskSpaceFlag.Name) {
 			minFreeDiskSpace = ctx.Int(MinFreeDiskSpaceFlag.Name)
 		} else if ctx.IsSet(CacheFlag.Name) || ctx.IsSet(CacheGCFlag.Name) {
@@ -298,7 +298,7 @@ func ExportAppendChain(blockchain *core.BlockChain, fn string, first uint64, las
 
 // ImportPreimages imports a batch of exported hash preimages into the database.
 // It's a part of the deprecated functionality, should be removed in the future.
-func ImportPreimages(db ethdb.Database, fn string) error {
+func ImportPreimages(db uncdb.Database, fn string) error {
 	log.Info("Importing preimages", "file", fn)
 
 	// Open the file handle and potentially unwrap the gzip stream
@@ -346,7 +346,7 @@ func ImportPreimages(db ethdb.Database, fn string) error {
 // ExportPreimages exports all known hash preimages into the specified file,
 // truncating any data already present in the file.
 // It's a part of the deprecated functionality, should be removed in the future.
-func ExportPreimages(db ethdb.Database, fn string) error {
+func ExportPreimages(db uncdb.Database, fn string) error {
 	log.Info("Exporting preimages", "file", fn)
 
 	// Open the file handle and potentially wrap with a gzip stream
@@ -380,20 +380,20 @@ func ExportPreimages(db ethdb.Database, fn string) error {
 // should be bumped.
 // If the importer sees a higher version, it should reject the import.
 type exportHeader struct {
-	Magic    string // Always set to 'gethdbdump' for disambiguation
+	Magic    string // Always set to 'guncdbdump' for disambiguation
 	Version  uint64
 	Kind     string
 	UnixTime uint64
 }
 
-const exportMagic = "gethdbdump"
+const exportMagic = "guncdbdump"
 const (
 	OpBatchAdd = 0
 	OpBatchDel = 1
 )
 
 // ImportLDBData imports a batch of snapshot data into the database
-func ImportLDBData(db ethdb.Database, f string, startIndex int64, interrupt chan struct{}) error {
+func ImportLDBData(db uncdb.Database, f string, startIndex int64, interrupt chan struct{}) error {
 	log.Info("Importing leveldb data", "file", f)
 
 	// Open the file handle and potentially unwrap the gzip stream
@@ -462,7 +462,7 @@ func ImportLDBData(db ethdb.Database, f string, startIndex int64, interrupt chan
 		default:
 			return fmt.Errorf("unknown op %d\n", op)
 		}
-		if batch.ValueSize() > ethdb.IdealBatchSize {
+		if batch.ValueSize() > uncdb.IdealBatchSize {
 			if err := batch.Write(); err != nil {
 				return err
 			}

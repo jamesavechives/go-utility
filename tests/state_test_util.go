@@ -35,17 +35,17 @@ import (
 	"github.com/yanhuangpai/go-utility/core/types"
 	"github.com/yanhuangpai/go-utility/core/vm"
 	"github.com/yanhuangpai/go-utility/crypto"
-	"github.com/yanhuangpai/go-utility/ethdb"
 	"github.com/yanhuangpai/go-utility/params"
 	"github.com/yanhuangpai/go-utility/rlp"
 	"github.com/yanhuangpai/go-utility/trie"
 	"github.com/yanhuangpai/go-utility/trie/triedb/hashdb"
 	"github.com/yanhuangpai/go-utility/trie/triedb/pathdb"
+	"github.com/yanhuangpai/go-utility/uncdb"
 	"golang.org/x/crypto/sha3"
 )
 
 // StateTest checks transaction processing without block context.
-// See https://github.com/utility/EIPs/issues/176 for the test format specification.
+// See https://github.com/ethereum/EIPs/issues/176 for the test format specification.
 type StateTest struct {
 	json stJSON
 }
@@ -269,7 +269,7 @@ func (t *StateTest) RunNoVerify(subtest StateSubtest, vmconfig vm.Config, snapsh
 		}
 	}
 
-	// Prepare the EVM.
+	// Prepare the UVM.
 	txContext := core.NewEVMTxContext(msg)
 	context := core.NewEVMBlockContext(block.Header(), nil, &t.json.Env.Coinbase)
 	context.GetHash = vmTestBlockHash
@@ -283,13 +283,13 @@ func (t *StateTest) RunNoVerify(subtest StateSubtest, vmconfig vm.Config, snapsh
 		context.Random = &rnd
 		context.Difficulty = big.NewInt(0)
 	}
-	evm := vm.NewEVM(context, txContext, statedb, config, vmconfig)
+	uvm := vm.NewEVM(context, txContext, statedb, config, vmconfig)
 
 	// Execute the message.
 	snapshot := statedb.Snapshot()
 	gaspool := new(core.GasPool)
 	gaspool.AddGas(block.GasLimit())
-	_, err = core.ApplyMessage(evm, msg, gaspool)
+	_, err = core.ApplyMessage(uvm, msg, gaspool)
 	if err != nil {
 		statedb.RevertToSnapshot(snapshot)
 	}
@@ -309,7 +309,7 @@ func (t *StateTest) gasLimit(subtest StateSubtest) uint64 {
 	return t.json.Tx.GasLimit[t.json.Post[subtest.Fork][subtest.Index].Indexes.Gas]
 }
 
-func MakePreState(db ethdb.Database, accounts core.GenesisAlloc, snapshotter bool, scheme string) (*trie.Database, *snapshot.Tree, *state.StateDB) {
+func MakePreState(db uncdb.Database, accounts core.GenesisAlloc, snapshotter bool, scheme string) (*trie.Database, *snapshot.Tree, *state.StateDB) {
 	tconf := &trie.Config{Preimages: true}
 	if scheme == rawdb.HashScheme {
 		tconf.HashDB = hashdb.Defaults
@@ -397,7 +397,7 @@ func (tx *stTransaction) toMessage(ps stPostState, baseFee *big.Int) (*core.Mess
 	dataHex := tx.Data[ps.Indexes.Data]
 	valueHex := tx.Value[ps.Indexes.Value]
 	gasLimit := tx.GasLimit[ps.Indexes.Gas]
-	// Value, Data hex encoding is messy: https://github.com/utility/tests/issues/203
+	// Value, Data hex encoding is messy: https://github.com/ethereum/tests/issues/203
 	value := new(big.Int)
 	if valueHex != "0x" {
 		v, ok := math.ParseBig256(valueHex)

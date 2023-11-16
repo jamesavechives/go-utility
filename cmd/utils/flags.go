@@ -47,12 +47,9 @@ import (
 	"github.com/yanhuangpai/go-utility/core/vm"
 	"github.com/yanhuangpai/go-utility/crypto"
 	"github.com/yanhuangpai/go-utility/crypto/kzg4844"
-	"github.com/yanhuangpai/go-utility/ethdb"
-	"github.com/yanhuangpai/go-utility/ethdb/remotedb"
-	"github.com/yanhuangpai/go-utility/ethstats"
 	"github.com/yanhuangpai/go-utility/graphql"
-	"github.com/yanhuangpai/go-utility/internal/ethapi"
 	"github.com/yanhuangpai/go-utility/internal/flags"
+	"github.com/yanhuangpai/go-utility/internal/uncapi"
 	"github.com/yanhuangpai/go-utility/les"
 	"github.com/yanhuangpai/go-utility/log"
 	"github.com/yanhuangpai/go-utility/metrics"
@@ -72,10 +69,13 @@ import (
 	"github.com/yanhuangpai/go-utility/unc"
 	"github.com/yanhuangpai/go-utility/unc/catalyst"
 	"github.com/yanhuangpai/go-utility/unc/downloader"
-	"github.com/yanhuangpai/go-utility/unc/ethconfig"
 	"github.com/yanhuangpai/go-utility/unc/filters"
 	"github.com/yanhuangpai/go-utility/unc/gasprice"
 	"github.com/yanhuangpai/go-utility/unc/tracers"
+	"github.com/yanhuangpai/go-utility/unc/uncconfig"
+	"github.com/yanhuangpai/go-utility/uncdb"
+	"github.com/yanhuangpai/go-utility/uncdb/remotedb"
+	"github.com/yanhuangpai/go-utility/uncstats"
 )
 
 // These are all the command line flags we support.
@@ -133,7 +133,7 @@ var (
 	NetworkIdFlag = &cli.Uint64Flag{
 		Name:     "networkid",
 		Usage:    "Explicitly set network id (integer)(For testnets: use --goerli, --sepolia, --holesky instead)",
-		Value:    ethconfig.Defaults.NetworkId,
+		Value:    uncconfig.Defaults.NetworkId,
 		Category: flags.EthCategory,
 	}
 	MainnetFlag = &cli.BoolFlag{
@@ -220,7 +220,7 @@ var (
 		Value: 0,
 	}
 
-	defaultSyncMode = ethconfig.Defaults.SyncMode
+	defaultSyncMode = uncconfig.Defaults.SyncMode
 	SnapshotFlag    = &cli.BoolFlag{
 		Name:     "snapshot",
 		Usage:    `Enables snapshot-database mode (default = enable)`,
@@ -273,38 +273,38 @@ var (
 	StateHistoryFlag = &cli.Uint64Flag{
 		Name:     "history.state",
 		Usage:    "Number of recent blocks to retain state history for (default = 90,000 blocks, 0 = entire chain)",
-		Value:    ethconfig.Defaults.StateHistory,
+		Value:    uncconfig.Defaults.StateHistory,
 		Category: flags.StateCategory,
 	}
 	TransactionHistoryFlag = &cli.Uint64Flag{
 		Name:     "history.transactions",
 		Usage:    "Number of recent blocks to maintain transactions index for (default = about one year, 0 = entire chain)",
-		Value:    ethconfig.Defaults.TransactionHistory,
+		Value:    uncconfig.Defaults.TransactionHistory,
 		Category: flags.StateCategory,
 	}
 	// Light server and client settings
 	LightServeFlag = &cli.IntFlag{
 		Name:     "light.serve",
 		Usage:    "Maximum percentage of time allowed for serving LES requests (multi-threaded processing allows values over 100)",
-		Value:    ethconfig.Defaults.LightServ,
+		Value:    uncconfig.Defaults.LightServ,
 		Category: flags.LightCategory,
 	}
 	LightIngressFlag = &cli.IntFlag{
 		Name:     "light.ingress",
 		Usage:    "Incoming bandwidth limit for serving light clients (kilobytes/sec, 0 = unlimited)",
-		Value:    ethconfig.Defaults.LightIngress,
+		Value:    uncconfig.Defaults.LightIngress,
 		Category: flags.LightCategory,
 	}
 	LightEgressFlag = &cli.IntFlag{
 		Name:     "light.egress",
 		Usage:    "Outgoing bandwidth limit for serving light clients (kilobytes/sec, 0 = unlimited)",
-		Value:    ethconfig.Defaults.LightEgress,
+		Value:    uncconfig.Defaults.LightEgress,
 		Category: flags.LightCategory,
 	}
 	LightMaxPeersFlag = &cli.IntFlag{
 		Name:     "light.maxpeers",
 		Usage:    "Maximum number of light clients to serve, or light servers to attach to",
-		Value:    ethconfig.Defaults.LightPeers,
+		Value:    uncconfig.Defaults.LightPeers,
 		Category: flags.LightCategory,
 	}
 	LightNoPruneFlag = &cli.BoolFlag{
@@ -331,74 +331,74 @@ var (
 	TxPoolJournalFlag = &cli.StringFlag{
 		Name:     "txpool.journal",
 		Usage:    "Disk journal for local transaction to survive node restarts",
-		Value:    ethconfig.Defaults.TxPool.Journal,
+		Value:    uncconfig.Defaults.TxPool.Journal,
 		Category: flags.TxPoolCategory,
 	}
 	TxPoolRejournalFlag = &cli.DurationFlag{
 		Name:     "txpool.rejournal",
 		Usage:    "Time interval to regenerate the local transaction journal",
-		Value:    ethconfig.Defaults.TxPool.Rejournal,
+		Value:    uncconfig.Defaults.TxPool.Rejournal,
 		Category: flags.TxPoolCategory,
 	}
 	TxPoolPriceLimitFlag = &cli.Uint64Flag{
 		Name:     "txpool.pricelimit",
 		Usage:    "Minimum gas price tip to enforce for acceptance into the pool",
-		Value:    ethconfig.Defaults.TxPool.PriceLimit,
+		Value:    uncconfig.Defaults.TxPool.PriceLimit,
 		Category: flags.TxPoolCategory,
 	}
 	TxPoolPriceBumpFlag = &cli.Uint64Flag{
 		Name:     "txpool.pricebump",
 		Usage:    "Price bump percentage to replace an already existing transaction",
-		Value:    ethconfig.Defaults.TxPool.PriceBump,
+		Value:    uncconfig.Defaults.TxPool.PriceBump,
 		Category: flags.TxPoolCategory,
 	}
 	TxPoolAccountSlotsFlag = &cli.Uint64Flag{
 		Name:     "txpool.accountslots",
 		Usage:    "Minimum number of executable transaction slots guaranteed per account",
-		Value:    ethconfig.Defaults.TxPool.AccountSlots,
+		Value:    uncconfig.Defaults.TxPool.AccountSlots,
 		Category: flags.TxPoolCategory,
 	}
 	TxPoolGlobalSlotsFlag = &cli.Uint64Flag{
 		Name:     "txpool.globalslots",
 		Usage:    "Maximum number of executable transaction slots for all accounts",
-		Value:    ethconfig.Defaults.TxPool.GlobalSlots,
+		Value:    uncconfig.Defaults.TxPool.GlobalSlots,
 		Category: flags.TxPoolCategory,
 	}
 	TxPoolAccountQueueFlag = &cli.Uint64Flag{
 		Name:     "txpool.accountqueue",
 		Usage:    "Maximum number of non-executable transaction slots permitted per account",
-		Value:    ethconfig.Defaults.TxPool.AccountQueue,
+		Value:    uncconfig.Defaults.TxPool.AccountQueue,
 		Category: flags.TxPoolCategory,
 	}
 	TxPoolGlobalQueueFlag = &cli.Uint64Flag{
 		Name:     "txpool.globalqueue",
 		Usage:    "Maximum number of non-executable transaction slots for all accounts",
-		Value:    ethconfig.Defaults.TxPool.GlobalQueue,
+		Value:    uncconfig.Defaults.TxPool.GlobalQueue,
 		Category: flags.TxPoolCategory,
 	}
 	TxPoolLifetimeFlag = &cli.DurationFlag{
 		Name:     "txpool.lifetime",
 		Usage:    "Maximum amount of time non-executable transaction are queued",
-		Value:    ethconfig.Defaults.TxPool.Lifetime,
+		Value:    uncconfig.Defaults.TxPool.Lifetime,
 		Category: flags.TxPoolCategory,
 	}
 	// Blob transaction pool settings
 	BlobPoolDataDirFlag = &cli.StringFlag{
 		Name:     "blobpool.datadir",
 		Usage:    "Data directory to store blob transactions in",
-		Value:    ethconfig.Defaults.BlobPool.Datadir,
+		Value:    uncconfig.Defaults.BlobPool.Datadir,
 		Category: flags.BlobPoolCategory,
 	}
 	BlobPoolDataCapFlag = &cli.Uint64Flag{
 		Name:     "blobpool.datacap",
 		Usage:    "Disk space to allocate for pending blob transactions (soft limit)",
-		Value:    ethconfig.Defaults.BlobPool.Datacap,
+		Value:    uncconfig.Defaults.BlobPool.Datacap,
 		Category: flags.BlobPoolCategory,
 	}
 	BlobPoolPriceBumpFlag = &cli.Uint64Flag{
 		Name:     "blobpool.pricebump",
 		Usage:    "Price bump percentage to replace an already existing blob transaction",
-		Value:    ethconfig.Defaults.BlobPool.PriceBump,
+		Value:    uncconfig.Defaults.BlobPool.PriceBump,
 		Category: flags.BlobPoolCategory,
 	}
 	// Performance tuning settings
@@ -446,7 +446,7 @@ var (
 		Name:     "cache.blocklogs",
 		Usage:    "Size (in number of blocks) of the log cache for filtering",
 		Category: flags.PerfCategory,
-		Value:    ethconfig.Defaults.FilterLogCacheSize,
+		Value:    uncconfig.Defaults.FilterLogCacheSize,
 	}
 	FDLimitFlag = &cli.IntFlag{
 		Name:     "fdlimit",
@@ -469,13 +469,13 @@ var (
 	MinerGasLimitFlag = &cli.Uint64Flag{
 		Name:     "miner.gaslimit",
 		Usage:    "Target gas ceiling for mined blocks",
-		Value:    ethconfig.Defaults.Miner.GasCeil,
+		Value:    uncconfig.Defaults.Miner.GasCeil,
 		Category: flags.MinerCategory,
 	}
 	MinerGasPriceFlag = &flags.BigFlag{
 		Name:     "miner.gasprice",
 		Usage:    "Minimum gas price for mining a transaction",
-		Value:    ethconfig.Defaults.Miner.GasPrice,
+		Value:    uncconfig.Defaults.Miner.GasPrice,
 		Category: flags.MinerCategory,
 	}
 	MinerUnicrpytbaseFlag = &cli.StringFlag{
@@ -491,13 +491,13 @@ var (
 	MinerRecommitIntervalFlag = &cli.DurationFlag{
 		Name:     "miner.recommit",
 		Usage:    "Time interval to recreate the block being mined",
-		Value:    ethconfig.Defaults.Miner.Recommit,
+		Value:    uncconfig.Defaults.Miner.Recommit,
 		Category: flags.MinerCategory,
 	}
 	MinerNewPayloadTimeout = &cli.DurationFlag{
 		Name:     "miner.newpayload-timeout",
 		Usage:    "Specify the maximum time allowance for creating a new payload",
-		Value:    ethconfig.Defaults.Miner.NewPayloadTimeout,
+		Value:    uncconfig.Defaults.Miner.NewPayloadTimeout,
 		Category: flags.MinerCategory,
 	}
 
@@ -526,7 +526,7 @@ var (
 		Category: flags.AccountCategory,
 	}
 
-	// EVM settings
+	// UVM settings
 	VMEnableDebugFlag = &cli.BoolFlag{
 		Name:     "vmdebug",
 		Usage:    "Record information useful for VM and contract debugging",
@@ -537,19 +537,19 @@ var (
 	RPCGlobalGasCapFlag = &cli.Uint64Flag{
 		Name:     "rpc.gascap",
 		Usage:    "Sets a cap on gas that can be used in eth_call/estimateGas (0=infinite)",
-		Value:    ethconfig.Defaults.RPCGasCap,
+		Value:    uncconfig.Defaults.RPCGasCap,
 		Category: flags.APICategory,
 	}
 	RPCGlobalEVMTimeoutFlag = &cli.DurationFlag{
 		Name:     "rpc.evmtimeout",
 		Usage:    "Sets a timeout used for eth_call (0=infinite)",
-		Value:    ethconfig.Defaults.RPCEVMTimeout,
+		Value:    uncconfig.Defaults.RPCEVMTimeout,
 		Category: flags.APICategory,
 	}
 	RPCGlobalTxFeeCapFlag = &cli.Float64Flag{
 		Name:     "rpc.txfeecap",
 		Usage:    "Sets a cap on transaction fee (in unicrpyt) that can be sent via the RPC APIs (0 = no cap)",
-		Value:    ethconfig.Defaults.RPCTxFeeCap,
+		Value:    uncconfig.Defaults.RPCTxFeeCap,
 		Category: flags.APICategory,
 	}
 	// Authenticated RPC HTTP settings
@@ -578,9 +578,9 @@ var (
 	}
 
 	// Logging and debug settings
-	EthStatsURLFlag = &cli.StringFlag{
-		Name:     "ethstats",
-		Usage:    "Reporting URL of a ethstats service (nodename:secret@host:port)",
+	UncStatsURLFlag = &cli.StringFlag{
+		Name:     "uncstats",
+		Usage:    "Reporting URL of a uncstats service (nodename:secret@host:port)",
 		Category: flags.MetricsCategory,
 	}
 	NoCompactionFlag = &cli.BoolFlag{
@@ -828,25 +828,25 @@ var (
 	GpoBlocksFlag = &cli.IntFlag{
 		Name:     "gpo.blocks",
 		Usage:    "Number of recent blocks to check for gas prices",
-		Value:    ethconfig.Defaults.GPO.Blocks,
+		Value:    uncconfig.Defaults.GPO.Blocks,
 		Category: flags.GasPriceCategory,
 	}
 	GpoPercentileFlag = &cli.IntFlag{
 		Name:     "gpo.percentile",
 		Usage:    "Suggested gas price is the given percentile of a set of recent transaction gas prices",
-		Value:    ethconfig.Defaults.GPO.Percentile,
+		Value:    uncconfig.Defaults.GPO.Percentile,
 		Category: flags.GasPriceCategory,
 	}
 	GpoMaxGasPriceFlag = &cli.Int64Flag{
 		Name:     "gpo.maxprice",
 		Usage:    "Maximum transaction priority fee (or gasprice before London fork) to be recommended by gpo",
-		Value:    ethconfig.Defaults.GPO.MaxPrice.Int64(),
+		Value:    uncconfig.Defaults.GPO.MaxPrice.Int64(),
 		Category: flags.GasPriceCategory,
 	}
 	GpoIgnoreGasPriceFlag = &cli.Int64Flag{
 		Name:     "gpo.ignoreprice",
 		Usage:    "Gas price below which gpo will ignore transactions",
-		Value:    ethconfig.Defaults.GPO.IgnorePrice.Int64(),
+		Value:    uncconfig.Defaults.GPO.IgnorePrice.Int64(),
 		Category: flags.GasPriceCategory,
 	}
 
@@ -1225,7 +1225,7 @@ func setIPC(ctx *cli.Context, cfg *node.Config) {
 }
 
 // setLes configures the les server and ultra light client settings from the command line flags.
-func setLes(ctx *cli.Context, cfg *ethconfig.Config) {
+func setLes(ctx *cli.Context, cfg *uncconfig.Config) {
 	if ctx.IsSet(LightServeFlag.Name) {
 		cfg.LightServ = ctx.Int(LightServeFlag.Name)
 	}
@@ -1299,7 +1299,7 @@ func MakeAddress(ks *keystore.KeyStore, account string) (accounts.Account, error
 }
 
 // setUnicrpytbase retrieves the unicrpytbase from the directly specified command line flags.
-func setUnicrpytbase(ctx *cli.Context, cfg *ethconfig.Config) {
+func setUnicrpytbase(ctx *cli.Context, cfg *uncconfig.Config) {
 	if !ctx.IsSet(MinerUnicrpytbaseFlag.Name) {
 		return
 	}
@@ -1500,7 +1500,7 @@ func setGPO(ctx *cli.Context, cfg *gasprice.Config, light bool) {
 	// If we are running the light client, apply another group
 	// settings for gas oracle.
 	if light {
-		*cfg = ethconfig.LightClientGPO
+		*cfg = uncconfig.LightClientGPO
 	}
 	if ctx.IsSet(GpoBlocksFlag.Name) {
 		cfg.Blocks = ctx.Int(GpoBlocksFlag.Name)
@@ -1577,7 +1577,7 @@ func setMiner(ctx *cli.Context, cfg *miner.Config) {
 	}
 }
 
-func setRequiredBlocks(ctx *cli.Context, cfg *ethconfig.Config) {
+func setRequiredBlocks(ctx *cli.Context, cfg *uncconfig.Config) {
 	requiredBlocks := ctx.String(EthRequiredBlocksFlag.Name)
 	if requiredBlocks == "" {
 		if ctx.IsSet(LegacyWhitelistFlag.Name) {
@@ -1646,8 +1646,8 @@ func CheckExclusive(ctx *cli.Context, args ...interface{}) {
 	}
 }
 
-// SetEthConfig applies unc-related command line flags to the config.
-func SetEthConfig(ctx *cli.Context, stack *node.Node, cfg *ethconfig.Config) {
+// Setuncconfig applies unc-related command line flags to the config.
+func Setuncconfig(ctx *cli.Context, stack *node.Node, cfg *uncconfig.Config) {
 	// Avoid conflicting network flags
 	CheckExclusive(ctx, MainnetFlag, DeveloperFlag, GoerliFlag, SepoliaFlag, HoleskyFlag)
 	CheckExclusive(ctx, LightServeFlag, SyncModeFlag, "light")
@@ -1720,7 +1720,7 @@ func SetEthConfig(ctx *cli.Context, stack *node.Node, cfg *ethconfig.Config) {
 	}
 	// Parse transaction history flag, if user is still using legacy config
 	// file with 'TxLookupLimit' configured, copy the value to 'TransactionHistory'.
-	if cfg.TransactionHistory == ethconfig.Defaults.TransactionHistory && cfg.TxLookupLimit != ethconfig.Defaults.TxLookupLimit {
+	if cfg.TransactionHistory == uncconfig.Defaults.TransactionHistory && cfg.TxLookupLimit != uncconfig.Defaults.TxLookupLimit {
 		log.Warn("The config option 'TxLookupLimit' is deprecated and will be removed, please use 'TransactionHistory'")
 		cfg.TransactionHistory = cfg.TxLookupLimit
 	}
@@ -1893,7 +1893,7 @@ func SetEthConfig(ctx *cli.Context, stack *node.Node, cfg *ethconfig.Config) {
 
 // SetDNSDiscoveryDefaults configures DNS discovery with the given URL if
 // no URLs are set.
-func SetDNSDiscoveryDefaults(cfg *ethconfig.Config, genesis common.Hash) {
+func SetDNSDiscoveryDefaults(cfg *uncconfig.Config, genesis common.Hash) {
 	if cfg.EthDiscoveryURLs != nil {
 		return // already set through flags/config
 	}
@@ -1910,7 +1910,7 @@ func SetDNSDiscoveryDefaults(cfg *ethconfig.Config, genesis common.Hash) {
 // RegisterEthService adds an Utility client to the stack.
 // The second return value is the full node instance, which may be nil if the
 // node is running as a light client.
-func RegisterEthService(stack *node.Node, cfg *ethconfig.Config) (ethapi.Backend, *unc.Utility) {
+func RegisterEthService(stack *node.Node, cfg *uncconfig.Config) (uncapi.Backend, *unc.Utility) {
 	if cfg.SyncMode == downloader.LightSync {
 		backend, err := les.New(stack, cfg)
 		if err != nil {
@@ -1933,15 +1933,15 @@ func RegisterEthService(stack *node.Node, cfg *ethconfig.Config) (ethapi.Backend
 	return backend.APIBackend, backend
 }
 
-// RegisterEthStatsService configures the Utility Stats daemon and adds it to the node.
-func RegisterEthStatsService(stack *node.Node, backend ethapi.Backend, url string) {
-	if err := ethstats.New(stack, backend, backend.Engine(), url); err != nil {
+// RegisteruncstatsService configures the Utility Stats daemon and adds it to the node.
+func RegisteruncstatsService(stack *node.Node, backend uncapi.Backend, url string) {
+	if err := uncstats.New(stack, backend, backend.Engine(), url); err != nil {
 		Fatalf("Failed to register the Utility Stats service: %v", err)
 	}
 }
 
 // RegisterGraphQLService adds the GraphQL API to the node.
-func RegisterGraphQLService(stack *node.Node, backend ethapi.Backend, filterSystem *filters.FilterSystem, cfg *node.Config) {
+func RegisterGraphQLService(stack *node.Node, backend uncapi.Backend, filterSystem *filters.FilterSystem, cfg *node.Config) {
 	err := graphql.New(stack, backend, filterSystem, cfg.GraphQLCors, cfg.GraphQLVirtualHosts)
 	if err != nil {
 		Fatalf("Failed to register the GraphQL service: %v", err)
@@ -1949,7 +1949,7 @@ func RegisterGraphQLService(stack *node.Node, backend ethapi.Backend, filterSyst
 }
 
 // RegisterFilterAPI adds the unc log filtering RPC API to the node.
-func RegisterFilterAPI(stack *node.Node, backend ethapi.Backend, ethcfg *ethconfig.Config) *filters.FilterSystem {
+func RegisterFilterAPI(stack *node.Node, backend uncapi.Backend, ethcfg *uncconfig.Config) *filters.FilterSystem {
 	isLightClient := ethcfg.SyncMode == downloader.LightSync
 	filterSystem := filters.NewFilterSystem(backend, filters.Config{
 		LogCacheSize: ethcfg.FilterLogCacheSize,
@@ -2046,12 +2046,12 @@ func SplitTagsFlag(tagsFlag string) map[string]string {
 }
 
 // MakeChainDatabase opens a database using the flags passed to the client and will hard crash if it fails.
-func MakeChainDatabase(ctx *cli.Context, stack *node.Node, readonly bool) ethdb.Database {
+func MakeChainDatabase(ctx *cli.Context, stack *node.Node, readonly bool) uncdb.Database {
 	var (
 		cache   = ctx.Int(CacheFlag.Name) * ctx.Int(CacheDatabaseFlag.Name) / 100
 		handles = MakeDatabaseHandles(ctx.Int(FDLimitFlag.Name))
 		err     error
-		chainDb ethdb.Database
+		chainDb uncdb.Database
 	)
 	switch {
 	case ctx.IsSet(RemoteDBFlag.Name):
@@ -2074,7 +2074,7 @@ func MakeChainDatabase(ctx *cli.Context, stack *node.Node, readonly bool) ethdb.
 
 // tryMakeReadOnlyDatabase try to open the chain database in read-only mode,
 // or fallback to write mode if the database is not initialized.
-func tryMakeReadOnlyDatabase(ctx *cli.Context, stack *node.Node) ethdb.Database {
+func tryMakeReadOnlyDatabase(ctx *cli.Context, stack *node.Node) uncdb.Database {
 	// If the database doesn't exist we need to open it in write-mode to allow
 	// the engine to create files.
 	readonly := true
@@ -2136,7 +2136,7 @@ func MakeGenesis(ctx *cli.Context) *core.Genesis {
 }
 
 // MakeChain creates a chain manager from set command line flags.
-func MakeChain(ctx *cli.Context, stack *node.Node, readonly bool) (*core.BlockChain, ethdb.Database) {
+func MakeChain(ctx *cli.Context, stack *node.Node, readonly bool) (*core.BlockChain, uncdb.Database) {
 	var (
 		gspec   = MakeGenesis(ctx)
 		chainDb = MakeChainDatabase(ctx, stack, readonly)
@@ -2145,7 +2145,7 @@ func MakeChain(ctx *cli.Context, stack *node.Node, readonly bool) (*core.BlockCh
 	if err != nil {
 		Fatalf("%v", err)
 	}
-	engine, err := ethconfig.CreateConsensusEngine(config, chainDb)
+	engine, err := uncconfig.CreateConsensusEngine(config, chainDb)
 	if err != nil {
 		Fatalf("%v", err)
 	}
@@ -2157,12 +2157,12 @@ func MakeChain(ctx *cli.Context, stack *node.Node, readonly bool) (*core.BlockCh
 		Fatalf("%v", err)
 	}
 	cache := &core.CacheConfig{
-		TrieCleanLimit:      ethconfig.Defaults.TrieCleanCache,
+		TrieCleanLimit:      uncconfig.Defaults.TrieCleanCache,
 		TrieCleanNoPrefetch: ctx.Bool(CacheNoPrefetchFlag.Name),
-		TrieDirtyLimit:      ethconfig.Defaults.TrieDirtyCache,
+		TrieDirtyLimit:      uncconfig.Defaults.TrieDirtyCache,
 		TrieDirtyDisabled:   ctx.String(GCModeFlag.Name) == "archive",
-		TrieTimeLimit:       ethconfig.Defaults.TrieTimeout,
-		SnapshotLimit:       ethconfig.Defaults.SnapshotCache,
+		TrieTimeLimit:       uncconfig.Defaults.TrieTimeout,
+		SnapshotLimit:       uncconfig.Defaults.SnapshotCache,
 		Preimages:           ctx.Bool(CachePreimagesFlag.Name),
 		StateScheme:         scheme,
 		StateHistory:        ctx.Uint64(StateHistoryFlag.Name),
@@ -2212,7 +2212,7 @@ func MakeConsolePreloads(ctx *cli.Context) []string {
 }
 
 // MakeTrieDatabase constructs a trie database based on the configured scheme.
-func MakeTrieDatabase(ctx *cli.Context, disk ethdb.Database, preimage bool, readOnly bool) *trie.Database {
+func MakeTrieDatabase(ctx *cli.Context, disk uncdb.Database, preimage bool, readOnly bool) *trie.Database {
 	config := &trie.Config{
 		Preimages: preimage,
 	}

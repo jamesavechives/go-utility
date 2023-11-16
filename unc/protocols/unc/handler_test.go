@@ -33,10 +33,10 @@ import (
 	"github.com/yanhuangpai/go-utility/core/types"
 	"github.com/yanhuangpai/go-utility/core/vm"
 	"github.com/yanhuangpai/go-utility/crypto"
-	"github.com/yanhuangpai/go-utility/ethdb"
 	"github.com/yanhuangpai/go-utility/p2p"
 	"github.com/yanhuangpai/go-utility/p2p/enode"
 	"github.com/yanhuangpai/go-utility/params"
+	"github.com/yanhuangpai/go-utility/uncdb"
 )
 
 var (
@@ -53,7 +53,7 @@ func u64(val uint64) *uint64 { return &val }
 // purpose is to allow testing the request/reply workflows and wire serialization
 // in the `unc` protocol without actually doing any data processing.
 type testBackend struct {
-	db     ethdb.Database
+	db     uncdb.Database
 	chain  *core.BlockChain
 	txpool *txpool.TxPool
 }

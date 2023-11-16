@@ -30,15 +30,15 @@ import (
 	"github.com/yanhuangpai/go-utility/cmd/utils"
 	"github.com/yanhuangpai/go-utility/common"
 	"github.com/yanhuangpai/go-utility/console/prompt"
-	"github.com/yanhuangpai/go-utility/ethclient"
 	"github.com/yanhuangpai/go-utility/internal/debug"
-	"github.com/yanhuangpai/go-utility/internal/ethapi"
 	"github.com/yanhuangpai/go-utility/internal/flags"
+	"github.com/yanhuangpai/go-utility/internal/uncapi"
 	"github.com/yanhuangpai/go-utility/log"
 	"github.com/yanhuangpai/go-utility/metrics"
 	"github.com/yanhuangpai/go-utility/node"
 	"github.com/yanhuangpai/go-utility/unc"
 	"github.com/yanhuangpai/go-utility/unc/downloader"
+	ethclient "github.com/yanhuangpai/go-utility/uncclient"
 	"go.uber.org/automaxprocs/maxprocs"
 
 	// Force-load the tracer engines to trigger registration
@@ -137,7 +137,7 @@ var (
 		utils.DeveloperPeriodFlag,
 		utils.VMEnableDebugFlag,
 		utils.NetworkIdFlag,
-		utils.EthStatsURLFlag,
+		utils.UncStatsURLFlag,
 		utils.NoCompactionFlag,
 		utils.GpoBlocksFlag,
 		utils.GpoPercentileFlag,
@@ -351,7 +351,7 @@ func gunc(ctx *cli.Context) error {
 // startNode boots up the system node and all registered protocols, after which
 // it unlocks any requested accounts, and starts the RPC/IPC interfaces and the
 // miner.
-func startNode(ctx *cli.Context, stack *node.Node, backend ethapi.Backend, isConsole bool) {
+func startNode(ctx *cli.Context, stack *node.Node, backend uncapi.Backend, isConsole bool) {
 	debug.Memsize.Add("node", stack)
 
 	// Start up the node itself
@@ -431,14 +431,14 @@ func startNode(ctx *cli.Context, stack *node.Node, backend ethapi.Backend, isCon
 		if ctx.String(utils.SyncModeFlag.Name) == "light" {
 			utils.Fatalf("Light clients do not support mining")
 		}
-		ethBackend, ok := backend.(*unc.EthAPIBackend)
+		uncBackend, ok := backend.(*unc.UncAPIBackend)
 		if !ok {
 			utils.Fatalf("Utility service not running")
 		}
 		// Set the gas price to the limits from the CLI and start mining
 		gasprice := flags.GlobalBig(ctx, utils.MinerGasPriceFlag.Name)
-		ethBackend.TxPool().SetGasTip(gasprice)
-		if err := ethBackend.StartMining(); err != nil {
+		uncBackend.TxPool().SetGasTip(gasprice)
+		if err := uncBackend.StartMining(); err != nil {
 			utils.Fatalf("Failed to start mining: %v", err)
 		}
 	}

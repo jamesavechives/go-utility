@@ -28,9 +28,9 @@ import (
 
 	"github.com/gofrs/flock"
 	"github.com/yanhuangpai/go-utility/common"
-	"github.com/yanhuangpai/go-utility/ethdb"
 	"github.com/yanhuangpai/go-utility/log"
 	"github.com/yanhuangpai/go-utility/metrics"
+	"github.com/yanhuangpai/go-utility/uncdb"
 )
 
 var (
@@ -237,7 +237,7 @@ func (f *Freezer) AncientSize(kind string) (uint64, error) {
 
 // ReadAncients runs the given read operation while ensuring that no writes take place
 // on the underlying freezer.
-func (f *Freezer) ReadAncients(fn func(ethdb.AncientReaderOp) error) (err error) {
+func (f *Freezer) ReadAncients(fn func(uncdb.AncientReaderOp) error) (err error) {
 	f.writeLock.RLock()
 	defer f.writeLock.RUnlock()
 
@@ -245,7 +245,7 @@ func (f *Freezer) ReadAncients(fn func(ethdb.AncientReaderOp) error) (err error)
 }
 
 // ModifyAncients runs the given write operation.
-func (f *Freezer) ModifyAncients(fn func(ethdb.AncientWriteOp) error) (writeSize int64, err error) {
+func (f *Freezer) ModifyAncients(fn func(uncdb.AncientWriteOp) error) (writeSize int64, err error) {
 	if f.readonly {
 		return 0, errReadOnly
 	}

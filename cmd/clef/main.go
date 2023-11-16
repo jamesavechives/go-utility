@@ -45,8 +45,8 @@ import (
 	"github.com/yanhuangpai/go-utility/common/hexutil"
 	"github.com/yanhuangpai/go-utility/core/types"
 	"github.com/yanhuangpai/go-utility/crypto"
-	"github.com/yanhuangpai/go-utility/internal/ethapi"
 	"github.com/yanhuangpai/go-utility/internal/flags"
+	"github.com/yanhuangpai/go-utility/internal/uncapi"
 	"github.com/yanhuangpai/go-utility/log"
 	"github.com/yanhuangpai/go-utility/node"
 	"github.com/yanhuangpai/go-utility/params"
@@ -1178,7 +1178,7 @@ func GenDoc(ctx *cli.Context) error {
 		rlpdata := common.FromHex("0xf85d640101948a8eafb1cf62bfbeb1741769dae1a9dd47996192018026a0716bd90515acb1e68e5ac5867aa11a1e65399c3349d479f5fb698554ebc6f293a04e8a4ebfff434e971e0ef12c5bf3a881b06fd04fc3f8b8a7291fb67a26a1d4ed")
 		var tx types.Transaction
 		tx.UnmarshalBinary(rlpdata)
-		add("OnApproved - SignTransactionResult", desc, &ethapi.SignTransactionResult{Raw: rlpdata, Tx: &tx})
+		add("OnApproved - SignTransactionResult", desc, &uncapi.SignTransactionResult{Raw: rlpdata, Tx: &tx})
 	}
 	{ // User input
 		add("UserInputRequest", "Sent when clef needs the user to provide data. If 'password' is true, the input field should be treated accordingly (echo-free)",

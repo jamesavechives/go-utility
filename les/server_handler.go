@@ -29,13 +29,13 @@ import (
 	"github.com/yanhuangpai/go-utility/core/rawdb"
 	"github.com/yanhuangpai/go-utility/core/txpool"
 	"github.com/yanhuangpai/go-utility/core/types"
-	"github.com/yanhuangpai/go-utility/ethdb"
 	"github.com/yanhuangpai/go-utility/les/flowcontrol"
 	"github.com/yanhuangpai/go-utility/light"
 	"github.com/yanhuangpai/go-utility/log"
 	"github.com/yanhuangpai/go-utility/metrics"
 	"github.com/yanhuangpai/go-utility/p2p"
 	"github.com/yanhuangpai/go-utility/trie"
+	"github.com/yanhuangpai/go-utility/uncdb"
 )
 
 const (
@@ -61,7 +61,7 @@ var (
 type serverHandler struct {
 	forkFilter forkid.Filter
 	blockchain *core.BlockChain
-	chainDb    ethdb.Database
+	chainDb    uncdb.Database
 	txpool     *txpool.TxPool
 	server     *LesServer
 
@@ -73,7 +73,7 @@ type serverHandler struct {
 	addTxsSync bool
 }
 
-func newServerHandler(server *LesServer, blockchain *core.BlockChain, chainDb ethdb.Database, txpool *txpool.TxPool, synced func() bool) *serverHandler {
+func newServerHandler(server *LesServer, blockchain *core.BlockChain, chainDb uncdb.Database, txpool *txpool.TxPool, synced func() bool) *serverHandler {
 	handler := &serverHandler{
 		forkFilter: forkid.NewFilter(blockchain),
 		server:     server,

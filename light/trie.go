@@ -26,10 +26,10 @@ import (
 	"github.com/yanhuangpai/go-utility/core/state"
 	"github.com/yanhuangpai/go-utility/core/types"
 	"github.com/yanhuangpai/go-utility/crypto"
-	"github.com/yanhuangpai/go-utility/ethdb"
 	"github.com/yanhuangpai/go-utility/rlp"
 	"github.com/yanhuangpai/go-utility/trie"
 	"github.com/yanhuangpai/go-utility/trie/trienode"
+	"github.com/yanhuangpai/go-utility/uncdb"
 )
 
 var (
@@ -96,7 +96,7 @@ func (db *odrDatabase) TrieDB() *trie.Database {
 	return nil
 }
 
-func (db *odrDatabase) DiskDB() ethdb.KeyValueStore {
+func (db *odrDatabase) DiskDB() uncdb.KeyValueStore {
 	panic("not implemented")
 }
 
@@ -199,7 +199,7 @@ func (t *odrTrie) GetKey(sha []byte) []byte {
 	return nil
 }
 
-func (t *odrTrie) Prove(key []byte, proofDb ethdb.KeyValueWriter) error {
+func (t *odrTrie) Prove(key []byte, proofDb uncdb.KeyValueWriter) error {
 	return errors.New("not implemented, needs client/server interface split")
 }
 

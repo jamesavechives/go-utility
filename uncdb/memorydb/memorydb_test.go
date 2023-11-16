@@ -19,13 +19,13 @@ package memorydb
 import (
 	"testing"
 
-	"github.com/yanhuangpai/go-utility/ethdb"
-	"github.com/yanhuangpai/go-utility/ethdb/dbtest"
+	"github.com/yanhuangpai/go-utility/uncdb"
+	"github.com/yanhuangpai/go-utility/uncdb/dbtest"
 )
 
 func TestMemoryDB(t *testing.T) {
 	t.Run("DatabaseSuite", func(t *testing.T) {
-		dbtest.TestDatabaseSuite(t, func() ethdb.KeyValueStore {
+		dbtest.TestDatabaseSuite(t, func() uncdb.KeyValueStore {
 			return New()
 		})
 	})

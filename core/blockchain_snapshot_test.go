@@ -34,8 +34,8 @@ import (
 	"github.com/yanhuangpai/go-utility/core/rawdb"
 	"github.com/yanhuangpai/go-utility/core/types"
 	"github.com/yanhuangpai/go-utility/core/vm"
-	"github.com/yanhuangpai/go-utility/ethdb"
 	"github.com/yanhuangpai/go-utility/params"
+	"github.com/yanhuangpai/go-utility/uncdb"
 )
 
 // snapshotTestBasic wraps the common testing fields in the snapshot tests.
@@ -54,8 +54,8 @@ type snapshotTestBasic struct {
 	// share fields, set in runtime
 	datadir string
 	ancient string
-	db      ethdb.Database
-	genDb   ethdb.Database
+	db      uncdb.Database
+	genDb   uncdb.Database
 	engine  consensus.Engine
 	gspec   *Genesis
 }

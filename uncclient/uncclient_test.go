@@ -35,7 +35,7 @@ import (
 	"github.com/yanhuangpai/go-utility/params"
 	"github.com/yanhuangpai/go-utility/rpc"
 	"github.com/yanhuangpai/go-utility/unc"
-	"github.com/yanhuangpai/go-utility/unc/ethconfig"
+	"github.com/yanhuangpai/go-utility/unc/uncconfig"
 )
 
 // Verify that Client implements the utility interfaces.
@@ -219,7 +219,7 @@ func newTestBackend(t *testing.T) (*node.Node, []*types.Block) {
 		t.Fatalf("can't create new node: %v", err)
 	}
 	// Create Utility Service
-	config := &ethconfig.Config{Genesis: genesis}
+	config := &uncconfig.Config{Genesis: genesis}
 	ethservice, err := unc.New(n, config)
 	if err != nil {
 		t.Fatalf("can't create new utility service: %v", err)

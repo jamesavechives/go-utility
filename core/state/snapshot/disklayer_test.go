@@ -23,8 +23,8 @@ import (
 	"github.com/VictoriaMetrics/fastcache"
 	"github.com/yanhuangpai/go-utility/common"
 	"github.com/yanhuangpai/go-utility/core/rawdb"
-	"github.com/yanhuangpai/go-utility/ethdb/memorydb"
 	"github.com/yanhuangpai/go-utility/rlp"
+	"github.com/yanhuangpai/go-utility/uncdb/memorydb"
 )
 
 // reverse reverses the contents of a byte slice. It's used to update random accs

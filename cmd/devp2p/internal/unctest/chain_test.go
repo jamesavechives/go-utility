@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with go-utility. If not, see <http://www.gnu.org/licenses/>.
 
-package ethtest
+package UncTest
 
 import (
 	"path/filepath"
@@ -27,9 +27,9 @@ import (
 	"github.com/yanhuangpai/go-utility/unc/protocols/unc"
 )
 
-// TestEthProtocolNegotiation tests if the test suite
+// TestuncprotocolNegotiation tests if the test suite
 // can negotiate the highest unc protocol in a status message exchange
-func TestEthProtocolNegotiation(t *testing.T) {
+func TestuncprotocolNegotiation(t *testing.T) {
 	var tests = []struct {
 		conn     *Conn
 		caps     []p2p.Cap
@@ -116,7 +116,7 @@ func TestEthProtocolNegotiation(t *testing.T) {
 
 	for i, tt := range tests {
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
-			tt.conn.negotiateEthProtocol(tt.caps)
+			tt.conn.negotiateuncprotocol(tt.caps)
 			assert.Equal(t, tt.expected, uint32(tt.conn.negotiatedProtoVersion))
 		})
 	}

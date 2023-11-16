@@ -47,7 +47,7 @@ After the execution of `dataCopy`, we copy the `ret` into the designated memory 
 
 #### Summary
 
-A memory-corruption bug within the EVM can cause a consensus error, where vulnerable nodes obtain a different `stateRoot` when processing a maliciously crafted transaction. This, in turn, would lead to the chain being split: mainnet splitting in two forks.
+A memory-corruption bug within the UVM can cause a consensus error, where vulnerable nodes obtain a different `stateRoot` when processing a maliciously crafted transaction. This, in turn, would lead to the chain being split: mainnet splitting in two forks.
 
 #### Handling
 

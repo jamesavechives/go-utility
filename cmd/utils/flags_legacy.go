@@ -21,7 +21,7 @@ import (
 
 	"github.com/urfave/cli/v2"
 	"github.com/yanhuangpai/go-utility/internal/flags"
-	"github.com/yanhuangpai/go-utility/unc/ethconfig"
+	"github.com/yanhuangpai/go-utility/unc/uncconfig"
 )
 
 var ShowDeprecated = &cli.Command{
@@ -74,7 +74,7 @@ var (
 	TxLookupLimitFlag = &cli.Uint64Flag{
 		Name:     "txlookuplimit",
 		Usage:    "Number of recent blocks to maintain transactions index for (default = about one year, 0 = entire chain) (deprecated, use history.transactions instead)",
-		Value:    ethconfig.Defaults.TransactionHistory,
+		Value:    uncconfig.Defaults.TransactionHistory,
 		Category: flags.DeprecatedCategory,
 	}
 )

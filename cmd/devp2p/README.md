@@ -119,7 +119,7 @@ gunc --datadir <datadir> --nodiscover --nat=none --networkid 19763 --verbosity 5
 
 Then, run the following command, replacing `<enode>` with the enode of the gunc node:
  ```
- devp2p rlpx unc-test <enode> cmd/devp2p/internal/ethtest/testdata/chain.rlp cmd/devp2p/internal/ethtest/testdata/genesis.json
+ devp2p rlpx unc-test <enode> cmd/devp2p/internal/UncTest/testdata/chain.rlp cmd/devp2p/internal/UncTest/testdata/genesis.json
 ```
 
 Repeat the above process (re-initialising the node) in order to run the Unc Protocol test suite again.
@@ -131,10 +131,10 @@ To run the eth66 protocol test suite, initialize a gunc node as described above 
 replacing `<enode>` with the enode of the gunc node:
 
  ```
- devp2p rlpx eth66-test <enode> cmd/devp2p/internal/ethtest/testdata/chain.rlp cmd/devp2p/internal/ethtest/testdata/genesis.json
+ devp2p rlpx eth66-test <enode> cmd/devp2p/internal/UncTest/testdata/chain.rlp cmd/devp2p/internal/UncTest/testdata/genesis.json
 ```
 
-[unc]: https://github.com/utility/devp2p/blob/master/caps/unc.md
+[unc]: https://github.com/ethereum/devp2p/blob/master/caps/unc.md
 [dns-tutorial]: https://gunc.utility.org/docs/developers/gunc-developer/dns-discovery-setup
-[discv4]: https://github.com/utility/devp2p/tree/master/discv4.md
-[discv5]: https://github.com/utility/devp2p/tree/master/discv5/discv5.md
+[discv4]: https://github.com/ethereum/devp2p/tree/master/discv4.md
+[discv5]: https://github.com/ethereum/devp2p/tree/master/discv5/discv5.md

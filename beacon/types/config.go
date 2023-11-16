@@ -43,7 +43,7 @@ type Fork struct {
 	// Epoch when given fork version is activated
 	Epoch uint64
 
-	// Fork version, see https://github.com/utility/consensus-specs/blob/dev/specs/phase0/beacon-chain.md#custom-types
+	// Fork version, see https://github.com/ethereum/consensus-specs/blob/dev/specs/phase0/beacon-chain.md#custom-types
 	Version []byte
 
 	// calculated by computeDomain, based on fork version and genesis validators root

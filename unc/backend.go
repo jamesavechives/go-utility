@@ -39,10 +39,9 @@ import (
 	"github.com/yanhuangpai/go-utility/core/txpool/legacypool"
 	"github.com/yanhuangpai/go-utility/core/types"
 	"github.com/yanhuangpai/go-utility/core/vm"
-	"github.com/yanhuangpai/go-utility/ethdb"
 	"github.com/yanhuangpai/go-utility/event"
-	"github.com/yanhuangpai/go-utility/internal/ethapi"
 	"github.com/yanhuangpai/go-utility/internal/shutdowncheck"
+	"github.com/yanhuangpai/go-utility/internal/uncapi"
 	"github.com/yanhuangpai/go-utility/log"
 	"github.com/yanhuangpai/go-utility/miner"
 	"github.com/yanhuangpai/go-utility/node"
@@ -53,19 +52,20 @@ import (
 	"github.com/yanhuangpai/go-utility/rlp"
 	"github.com/yanhuangpai/go-utility/rpc"
 	"github.com/yanhuangpai/go-utility/unc/downloader"
-	"github.com/yanhuangpai/go-utility/unc/ethconfig"
 	"github.com/yanhuangpai/go-utility/unc/gasprice"
 	"github.com/yanhuangpai/go-utility/unc/protocols/snap"
 	"github.com/yanhuangpai/go-utility/unc/protocols/unc"
+	"github.com/yanhuangpai/go-utility/unc/uncconfig"
+	"github.com/yanhuangpai/go-utility/uncdb"
 )
 
 // Config contains the configuration options of the UNC protocol.
-// Deprecated: use ethconfig.Config instead.
-type Config = ethconfig.Config
+// Deprecated: use uncconfig.Config instead.
+type Config = uncconfig.Config
 
 // Utility implements the Utility full node service.
 type Utility struct {
-	config *ethconfig.Config
+	config *uncconfig.Config
 
 	// Handlers
 	txPool *txpool.TxPool
@@ -77,7 +77,7 @@ type Utility struct {
 	merger             *consensus.Merger
 
 	// DB interfaces
-	chainDb ethdb.Database // Block chain database
+	chainDb uncdb.Database // Block chain database
 
 	eventMux       *event.TypeMux
 	engine         consensus.Engine
@@ -87,14 +87,14 @@ type Utility struct {
 	bloomIndexer      *core.ChainIndexer             // Bloom indexer operating during block imports
 	closeBloomHandler chan struct{}
 
-	APIBackend *EthAPIBackend
+	APIBackend *UncAPIBackend
 
 	miner        *miner.Miner
 	gasPrice     *big.Int
 	unicrpytbase common.Address
 
 	networkID     uint64
-	netRPCService *ethapi.NetAPI
+	netRPCService *uncapi.NetAPI
 
 	p2pServer *p2p.Server
 
@@ -105,7 +105,7 @@ type Utility struct {
 
 // New creates a new Utility object (including the
 // initialisation of the common Utility object)
-func New(stack *node.Node, config *ethconfig.Config) (*Utility, error) {
+func New(stack *node.Node, config *uncconfig.Config) (*Utility, error) {
 	// Ensure configuration values are compatible and sane
 	if config.SyncMode == downloader.LightSync {
 		return nil, errors.New("can't run unc.Utility in light sync mode, use les.LightUnility")
@@ -114,8 +114,8 @@ func New(stack *node.Node, config *ethconfig.Config) (*Utility, error) {
 		return nil, fmt.Errorf("invalid sync mode %d", config.SyncMode)
 	}
 	if config.Miner.GasPrice == nil || config.Miner.GasPrice.Cmp(common.Big0) <= 0 {
-		log.Warn("Sanitizing invalid miner gas price", "provided", config.Miner.GasPrice, "updated", ethconfig.Defaults.Miner.GasPrice)
-		config.Miner.GasPrice = new(big.Int).Set(ethconfig.Defaults.Miner.GasPrice)
+		log.Warn("Sanitizing invalid miner gas price", "provided", config.Miner.GasPrice, "updated", uncconfig.Defaults.Miner.GasPrice)
+		config.Miner.GasPrice = new(big.Int).Set(uncconfig.Defaults.Miner.GasPrice)
 	}
 	if config.NoPruning && config.TrieDirtyCache > 0 {
 		if config.SnapshotCache > 0 {
@@ -148,7 +148,7 @@ func New(stack *node.Node, config *ethconfig.Config) (*Utility, error) {
 	if err != nil {
 		return nil, err
 	}
-	engine, err := ethconfig.CreateConsensusEngine(chainConfig, chainDb)
+	engine, err := uncconfig.CreateConsensusEngine(chainConfig, chainDb)
 	if err != nil {
 		return nil, err
 	}
@@ -252,7 +252,7 @@ func New(stack *node.Node, config *ethconfig.Config) (*Utility, error) {
 	unc.miner = miner.New(unc, &config.Miner, unc.blockchain.Config(), unc.EventMux(), unc.engine, unc.isLocalBlock)
 	unc.miner.SetExtra(makeExtraData(config.Miner.ExtraData))
 
-	unc.APIBackend = &EthAPIBackend{stack.Config().ExtRPCEnabled(), stack.Config().AllowUnprotectedTxs, unc, nil}
+	unc.APIBackend = &UncAPIBackend{stack.Config().ExtRPCEnabled(), stack.Config().AllowUnprotectedTxs, unc, nil}
 	if unc.APIBackend.allowUnprotectedTxs {
 		log.Info("Unprotected transactions allowed")
 	}
@@ -274,7 +274,7 @@ func New(stack *node.Node, config *ethconfig.Config) (*Utility, error) {
 	}
 
 	// Start the RPC service
-	unc.netRPCService = ethapi.NewNetAPI(unc.p2pServer, networkID)
+	unc.netRPCService = uncapi.NewNetAPI(unc.p2pServer, networkID)
 
 	// Register the backend on the node
 	stack.RegisterAPIs(unc.APIs())
@@ -307,7 +307,7 @@ func makeExtraData(extra []byte) []byte {
 // APIs return the collection of RPC services the utility package offers.
 // NOTE, some of these services probably need to be moved to somewhere else.
 func (s *Utility) APIs() []rpc.API {
-	apis := ethapi.GetAPIs(s.APIBackend)
+	apis := uncapi.GetAPIs(s.APIBackend)
 
 	// Append any APIs exposed explicitly by the consensus engine
 	apis = append(apis, s.engine.APIs(s.BlockChain())...)
@@ -479,7 +479,7 @@ func (s *Utility) BlockChain() *core.BlockChain       { return s.blockchain }
 func (s *Utility) TxPool() *txpool.TxPool             { return s.txPool }
 func (s *Utility) EventMux() *event.TypeMux           { return s.eventMux }
 func (s *Utility) Engine() consensus.Engine           { return s.engine }
-func (s *Utility) ChainDb() ethdb.Database            { return s.chainDb }
+func (s *Utility) ChainDb() uncdb.Database            { return s.chainDb }
 func (s *Utility) IsListening() bool                  { return true } // Always listening
 func (s *Utility) Downloader() *downloader.Downloader { return s.handler.downloader }
 func (s *Utility) Synced() bool                       { return s.handler.synced.Load() }

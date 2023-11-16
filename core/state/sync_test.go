@@ -25,11 +25,11 @@ import (
 	"github.com/yanhuangpai/go-utility/core/rawdb"
 	"github.com/yanhuangpai/go-utility/core/types"
 	"github.com/yanhuangpai/go-utility/crypto"
-	"github.com/yanhuangpai/go-utility/ethdb"
 	"github.com/yanhuangpai/go-utility/rlp"
 	"github.com/yanhuangpai/go-utility/trie"
 	"github.com/yanhuangpai/go-utility/trie/triedb/hashdb"
 	"github.com/yanhuangpai/go-utility/trie/triedb/pathdb"
+	"github.com/yanhuangpai/go-utility/uncdb"
 )
 
 // testAccount is the data associated with an account used by the state tests.
@@ -41,7 +41,7 @@ type testAccount struct {
 }
 
 // makeTestState create a sample test state to test node-wise reconstruction.
-func makeTestState(scheme string) (ethdb.Database, Database, *trie.Database, common.Hash, []*testAccount) {
+func makeTestState(scheme string) (uncdb.Database, Database, *trie.Database, common.Hash, []*testAccount) {
 	// Create an empty state
 	config := &trie.Config{Preimages: true}
 	if scheme == rawdb.PathScheme {
@@ -86,7 +86,7 @@ func makeTestState(scheme string) (ethdb.Database, Database, *trie.Database, com
 
 // checkStateAccounts cross references a reconstructed state with an expected
 // account array.
-func checkStateAccounts(t *testing.T, db ethdb.Database, scheme string, root common.Hash, accounts []*testAccount) {
+func checkStateAccounts(t *testing.T, db uncdb.Database, scheme string, root common.Hash, accounts []*testAccount) {
 	var config trie.Config
 	if scheme == rawdb.PathScheme {
 		config.PathDB = pathdb.Defaults
@@ -113,7 +113,7 @@ func checkStateAccounts(t *testing.T, db ethdb.Database, scheme string, root com
 }
 
 // checkStateConsistency checks that all data of a state root is present.
-func checkStateConsistency(db ethdb.Database, scheme string, root common.Hash) error {
+func checkStateConsistency(db uncdb.Database, scheme string, root common.Hash) error {
 	config := &trie.Config{Preimages: true}
 	if scheme == rawdb.PathScheme {
 		config.PathDB = pathdb.Defaults
@@ -733,7 +733,7 @@ func testIncompleteStateSync(t *testing.T, scheme string) {
 	}
 }
 
-func copyPreimages(srcDb, dstDb ethdb.Database) {
+func copyPreimages(srcDb, dstDb uncdb.Database) {
 	it := srcDb.NewIterator(rawdb.PreimagePrefix, nil)
 	defer it.Release()
 

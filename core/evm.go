@@ -36,7 +36,7 @@ type ChainContext interface {
 	GetHeader(common.Hash, uint64) *types.Header
 }
 
-// NewEVMBlockContext creates a new context for use in the EVM.
+// NewEVMBlockContext creates a new context for use in the UVM.
 func NewEVMBlockContext(header *types.Header, chain ChainContext, author *common.Address) vm.BlockContext {
 	var (
 		beneficiary common.Address

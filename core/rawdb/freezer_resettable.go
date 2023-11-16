@@ -21,8 +21,8 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/yanhuangpai/go-utility/ethdb"
 	"github.com/yanhuangpai/go-utility/log"
+	"github.com/yanhuangpai/go-utility/uncdb"
 )
 
 const tmpSuffix = ".tmp"
@@ -156,7 +156,7 @@ func (f *ResettableFreezer) AncientSize(kind string) (uint64, error) {
 
 // ReadAncients runs the given read operation while ensuring that no writes take place
 // on the underlying freezer.
-func (f *ResettableFreezer) ReadAncients(fn func(ethdb.AncientReaderOp) error) (err error) {
+func (f *ResettableFreezer) ReadAncients(fn func(uncdb.AncientReaderOp) error) (err error) {
 	f.lock.RLock()
 	defer f.lock.RUnlock()
 
@@ -164,7 +164,7 @@ func (f *ResettableFreezer) ReadAncients(fn func(ethdb.AncientReaderOp) error) (
 }
 
 // ModifyAncients runs the given write operation.
-func (f *ResettableFreezer) ModifyAncients(fn func(ethdb.AncientWriteOp) error) (writeSize int64, err error) {
+func (f *ResettableFreezer) ModifyAncients(fn func(uncdb.AncientWriteOp) error) (writeSize int64, err error) {
 	f.lock.RLock()
 	defer f.lock.RUnlock()
 

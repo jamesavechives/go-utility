@@ -144,7 +144,7 @@ func newFlatCallTracer(ctx *tracers.Context, cfg json.RawMessage) (tracers.Trace
 }
 
 // CaptureStart implements the EVMLogger interface to initialize the tracing operation.
-func (t *flatCallTracer) CaptureStart(env *vm.EVM, from common.Address, to common.Address, create bool, input []byte, gas uint64, value *big.Int) {
+func (t *flatCallTracer) CaptureStart(env *vm.UVM, from common.Address, to common.Address, create bool, input []byte, gas uint64, value *big.Int) {
 	t.tracer.CaptureStart(env, from, to, create, input, gas, value)
 	// Update list of precompiles based on current block
 	rules := env.ChainConfig().Rules(env.Context.BlockNumber, env.Context.Random != nil, env.Context.Time)
@@ -166,7 +166,7 @@ func (t *flatCallTracer) CaptureFault(pc uint64, op vm.OpCode, gas, cost uint64,
 	t.tracer.CaptureFault(pc, op, gas, cost, scope, depth, err)
 }
 
-// CaptureEnter is called when EVM enters a new scope (via call, create or selfdestruct).
+// CaptureEnter is called when UVM enters a new scope (via call, create or selfdestruct).
 func (t *flatCallTracer) CaptureEnter(typ vm.OpCode, from common.Address, to common.Address, input []byte, gas uint64, value *big.Int) {
 	t.tracer.CaptureEnter(typ, from, to, input, gas, value)
 
@@ -177,7 +177,7 @@ func (t *flatCallTracer) CaptureEnter(typ vm.OpCode, from common.Address, to com
 	}
 }
 
-// CaptureExit is called when EVM exits a scope, even if the scope didn't
+// CaptureExit is called when UVM exits a scope, even if the scope didn't
 // execute any code.
 func (t *flatCallTracer) CaptureExit(output []byte, gasUsed uint64, err error) {
 	t.tracer.CaptureExit(output, gasUsed, err)

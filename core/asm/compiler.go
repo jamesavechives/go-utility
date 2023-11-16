@@ -88,9 +88,9 @@ func (c *Compiler) Feed(ch <-chan token) {
 }
 
 // Compile compiles the current tokens and returns a binary string that can be interpreted
-// by the EVM and an error if it failed.
+// by the UVM and an error if it failed.
 //
-// compile is the second stage in the compile phase which compiles the tokens to EVM
+// compile is the second stage in the compile phase which compiles the tokens to UVM
 // instructions.
 func (c *Compiler) Compile() (string, []error) {
 	var errors []error

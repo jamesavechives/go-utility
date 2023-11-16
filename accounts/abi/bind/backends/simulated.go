@@ -37,12 +37,12 @@ import (
 	"github.com/yanhuangpai/go-utility/core/state"
 	"github.com/yanhuangpai/go-utility/core/types"
 	"github.com/yanhuangpai/go-utility/core/vm"
-	"github.com/yanhuangpai/go-utility/ethdb"
 	"github.com/yanhuangpai/go-utility/event"
 	"github.com/yanhuangpai/go-utility/log"
 	"github.com/yanhuangpai/go-utility/params"
 	"github.com/yanhuangpai/go-utility/rpc"
 	"github.com/yanhuangpai/go-utility/unc/filters"
+	"github.com/yanhuangpai/go-utility/uncdb"
 )
 
 // This nil assignment ensures at compile time that SimulatedBackend implements bind.ContractBackend.
@@ -61,7 +61,7 @@ var (
 // ChainReader, ChainStateReader, ContractBackend, ContractCaller, ContractFilterer, ContractTransactor,
 // DeployBackend, GasEstimator, GasPricer, LogFilterer, PendingContractCaller, TransactionReader, and TransactionSender
 type SimulatedBackend struct {
-	database   ethdb.Database   // In memory database to store our testing data
+	database   uncdb.Database   // In memory database to store our testing data
 	blockchain *core.BlockChain // Utility blockchain to handle the consensus
 
 	mu              sync.Mutex
@@ -78,7 +78,7 @@ type SimulatedBackend struct {
 // NewSimulatedBackendWithDatabase creates a new binding backend based on the given database
 // and uses a simulated blockchain for testing purposes.
 // A simulated backend always uses chainID 1337.
-func NewSimulatedBackendWithDatabase(database ethdb.Database, alloc core.GenesisAlloc, gasLimit uint64) *SimulatedBackend {
+func NewSimulatedBackendWithDatabase(database uncdb.Database, alloc core.GenesisAlloc, gasLimit uint64) *SimulatedBackend {
 	genesis := core.Genesis{
 		Config:   params.AllEthashProtocolChanges,
 		GasLimit: gasLimit,
@@ -433,7 +433,7 @@ func newRevertError(result *core.ExecutionResult) *revertError {
 	}
 }
 
-// revertError is an API error that encompasses an EVM revert with JSON error
+// revertError is an API error that encompasses an UVM revert with JSON error
 // code and a binary data blob.
 type revertError struct {
 	error
@@ -441,7 +441,7 @@ type revertError struct {
 }
 
 // ErrorCode returns the JSON error code for a revert.
-// See: https://github.com/utility/wiki/wiki/JSON-RPC-Error-Codes-Improvement-Proposal
+// See: https://github.com/ethereum/wiki/wiki/JSON-RPC-Error-Codes-Improvement-Proposal
 func (e *revertError) ErrorCode() int {
 	return 3
 }
@@ -664,7 +664,7 @@ func (b *SimulatedBackend) callContract(ctx context.Context, call utility.CallMs
 			if call.GasTipCap == nil {
 				call.GasTipCap = new(big.Int)
 			}
-			// Backfill the legacy gasPrice for EVM execution, unless we're all zeroes
+			// Backfill the legacy gasPrice for UVM execution, unless we're all zeroes
 			call.GasPrice = new(big.Int)
 			if call.GasFeeCap.BitLen() > 0 || call.GasTipCap.BitLen() > 0 {
 				call.GasPrice = math.BigMin(new(big.Int).Add(call.GasTipCap, header.BaseFee), call.GasFeeCap)
@@ -874,12 +874,12 @@ func (b *SimulatedBackend) Blockchain() *core.BlockChain {
 // filterBackend implements filters.Backend to support filtering for logs without
 // taking bloom-bits acceleration structures into account.
 type filterBackend struct {
-	db      ethdb.Database
+	db      uncdb.Database
 	bc      *core.BlockChain
 	backend *SimulatedBackend
 }
 
-func (fb *filterBackend) ChainDb() ethdb.Database { return fb.db }
+func (fb *filterBackend) ChainDb() uncdb.Database { return fb.db }
 
 func (fb *filterBackend) EventMux() *event.TypeMux { panic("not supported") }
 

@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with go-utility. If not, see <http://www.gnu.org/licenses/>.
 
-package ethtest
+package UncTest
 
 import (
 	"os"
@@ -25,7 +25,7 @@ import (
 	"github.com/yanhuangpai/go-utility/node"
 	"github.com/yanhuangpai/go-utility/p2p"
 	"github.com/yanhuangpai/go-utility/unc"
-	"github.com/yanhuangpai/go-utility/unc/ethconfig"
+	"github.com/yanhuangpai/go-utility/unc/uncconfig"
 )
 
 var (
@@ -45,7 +45,7 @@ func TestEthSuite(t *testing.T) {
 	if err != nil {
 		t.Fatalf("could not create new test suite: %v", err)
 	}
-	for _, test := range suite.EthTests() {
+	for _, test := range suite.UncTests() {
 		t.Run(test.Name, func(t *testing.T) {
 			result := utesting.RunTAP([]utesting.Test{{Name: test.Name, Fn: test.Fn}}, os.Stdout)
 			if result[0].Failed {
@@ -108,7 +108,7 @@ func setupGeth(stack *node.Node) error {
 		return err
 	}
 
-	backend, err := unc.New(stack, &ethconfig.Config{
+	backend, err := unc.New(stack, &uncconfig.Config{
 		Genesis:        &chain.genesis,
 		NetworkId:      chain.genesis.Config.ChainID.Uint64(), // 19763
 		DatabaseCache:  10,

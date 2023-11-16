@@ -38,8 +38,8 @@ import (
 	"github.com/yanhuangpai/go-utility/node"
 	"github.com/yanhuangpai/go-utility/params"
 	"github.com/yanhuangpai/go-utility/unc"
-	"github.com/yanhuangpai/go-utility/unc/ethconfig"
 	"github.com/yanhuangpai/go-utility/unc/filters"
+	"github.com/yanhuangpai/go-utility/unc/uncconfig"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -445,7 +445,7 @@ func createNode(t *testing.T) *node.Node {
 }
 
 func newGQLService(t *testing.T, stack *node.Node, shanghai bool, gspec *core.Genesis, genBlocks int, genfunc func(i int, gen *core.BlockGen)) (*handler, []*types.Block) {
-	ethConf := &ethconfig.Config{
+	ethConf := &uncconfig.Config{
 		Genesis:        gspec,
 		NetworkId:      1337,
 		TrieCleanCache: 5,
@@ -464,20 +464,20 @@ func newGQLService(t *testing.T, stack *node.Node, shanghai bool, gspec *core.Ge
 		shanghaiTime := uint64(5)
 		chainCfg.ShanghaiTime = &shanghaiTime
 	}
-	ethBackend, err := unc.New(stack, ethConf)
+	uncBackend, err := unc.New(stack, ethConf)
 	if err != nil {
 		t.Fatalf("could not create unc backend: %v", err)
 	}
 	// Create some blocks and import them
-	chain, _ := core.GenerateChain(params.AllEthashProtocolChanges, ethBackend.BlockChain().Genesis(),
-		engine, ethBackend.ChainDb(), genBlocks, genfunc)
-	_, err = ethBackend.BlockChain().InsertChain(chain)
+	chain, _ := core.GenerateChain(params.AllEthashProtocolChanges, uncBackend.BlockChain().Genesis(),
+		engine, uncBackend.ChainDb(), genBlocks, genfunc)
+	_, err = uncBackend.BlockChain().InsertChain(chain)
 	if err != nil {
 		t.Fatalf("could not create import blocks: %v", err)
 	}
 	// Set up handler
-	filterSystem := filters.NewFilterSystem(ethBackend.APIBackend, filters.Config{})
-	handler, err := newHandler(stack, ethBackend.APIBackend, filterSystem, []string{}, []string{})
+	filterSystem := filters.NewFilterSystem(uncBackend.APIBackend, filters.Config{})
+	handler, err := newHandler(stack, uncBackend.APIBackend, filterSystem, []string{}, []string{})
 	if err != nil {
 		t.Fatalf("could not create graphql service: %v", err)
 	}

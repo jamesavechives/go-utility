@@ -27,11 +27,11 @@ import (
 	"github.com/yanhuangpai/go-utility/common/hexutil"
 	"github.com/yanhuangpai/go-utility/core/rawdb"
 	"github.com/yanhuangpai/go-utility/core/types"
-	"github.com/yanhuangpai/go-utility/ethdb"
 	"github.com/yanhuangpai/go-utility/log"
 	"github.com/yanhuangpai/go-utility/rlp"
 	"github.com/yanhuangpai/go-utility/trie"
 	"github.com/yanhuangpai/go-utility/trie/trienode"
+	"github.com/yanhuangpai/go-utility/uncdb"
 )
 
 var (
@@ -55,7 +55,7 @@ var (
 // generateSnapshot regenerates a brand new snapshot based on an existing state
 // database and head block asynchronously. The snapshot is returned immediately
 // and generation is continued in the background until done.
-func generateSnapshot(diskdb ethdb.KeyValueStore, triedb *trie.Database, cache int, root common.Hash) *diskLayer {
+func generateSnapshot(diskdb uncdb.KeyValueStore, triedb *trie.Database, cache int, root common.Hash) *diskLayer {
 	// Create a new disk layer with an initialized state marker at zero
 	var (
 		stats     = &generatorStats{start: time.Now()}
@@ -82,7 +82,7 @@ func generateSnapshot(diskdb ethdb.KeyValueStore, triedb *trie.Database, cache i
 }
 
 // journalProgress persists the generator stats into the database to resume later.
-func journalProgress(db ethdb.KeyValueWriter, marker []byte, stats *generatorStats) {
+func journalProgress(db uncdb.KeyValueWriter, marker []byte, stats *generatorStats) {
 	// Write out the generator marker. Note it's a standalone disk layer generator
 	// which is not mixed with journal. It's ok if the generator is persisted while
 	// journal is not.
@@ -481,7 +481,7 @@ func (dl *diskLayer) checkAndFlush(ctx *generatorContext, current []byte) error 
 	case abort = <-dl.genAbort:
 	default:
 	}
-	if ctx.batch.ValueSize() > ethdb.IdealBatchSize || abort != nil {
+	if ctx.batch.ValueSize() > uncdb.IdealBatchSize || abort != nil {
 		if bytes.Compare(current, dl.genMarker) < 0 {
 			log.Error("Snapshot generator went backwards", "current", fmt.Sprintf("%x", current), "genMarker", fmt.Sprintf("%x", dl.genMarker))
 		}

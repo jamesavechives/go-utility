@@ -24,11 +24,11 @@ import (
 	"time"
 
 	"github.com/yanhuangpai/go-utility/common/mclock"
-	"github.com/yanhuangpai/go-utility/ethdb"
 	"github.com/yanhuangpai/go-utility/les/utils"
 	"github.com/yanhuangpai/go-utility/log"
 	"github.com/yanhuangpai/go-utility/p2p/enode"
 	"github.com/yanhuangpai/go-utility/rlp"
+	"github.com/yanhuangpai/go-utility/uncdb"
 )
 
 const (
@@ -131,7 +131,7 @@ type ValueTracker struct {
 	clock        mclock.Clock
 	lock         sync.Mutex
 	quit         chan chan struct{}
-	db           ethdb.KeyValueStore
+	db           uncdb.KeyValueStore
 	connected    map[enode.ID]*NodeValueTracker
 	reqTypeCount int
 
@@ -172,7 +172,7 @@ type RequestInfo struct {
 
 // NewValueTracker creates a new ValueTracker and loads its previously saved state from
 // the database if possible.
-func NewValueTracker(db ethdb.KeyValueStore, clock mclock.Clock, reqInfo []RequestInfo, updatePeriod time.Duration, transferRate, statsExpRate, offlineExpRate float64) *ValueTracker {
+func NewValueTracker(db uncdb.KeyValueStore, clock mclock.Clock, reqInfo []RequestInfo, updatePeriod time.Duration, transferRate, statsExpRate, offlineExpRate float64) *ValueTracker {
 	now := clock.Now()
 
 	initRefBasket := requestBasket{items: make([]basketItem, len(reqInfo))}

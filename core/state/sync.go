@@ -19,13 +19,13 @@ package state
 import (
 	"github.com/yanhuangpai/go-utility/common"
 	"github.com/yanhuangpai/go-utility/core/types"
-	"github.com/yanhuangpai/go-utility/ethdb"
 	"github.com/yanhuangpai/go-utility/rlp"
 	"github.com/yanhuangpai/go-utility/trie"
+	"github.com/yanhuangpai/go-utility/uncdb"
 )
 
 // NewStateSync create a new state trie download scheduler.
-func NewStateSync(root common.Hash, database ethdb.KeyValueReader, onLeaf func(keys [][]byte, leaf []byte) error, scheme string) *trie.Sync {
+func NewStateSync(root common.Hash, database uncdb.KeyValueReader, onLeaf func(keys [][]byte, leaf []byte) error, scheme string) *trie.Sync {
 	// Register the storage slot callback if the external callback is specified.
 	var onSlot func(keys [][]byte, path []byte, leaf []byte, parent common.Hash, parentPath []byte) error
 	if onLeaf != nil {

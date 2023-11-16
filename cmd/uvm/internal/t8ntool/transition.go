@@ -108,7 +108,7 @@ func Transition(ctx *cli.Context) error {
 		if ctx.IsSet(TraceDisableReturnDataFlag.Name) {
 			log.Warn(fmt.Sprintf("--%s has been deprecated in favour of --%s", TraceDisableReturnDataFlag.Name, TraceEnableReturnDataFlag.Name))
 		}
-		// Configure the EVM logger
+		// Configure the UVM logger
 		logConfig := &logger.Config{
 			DisableStack:     ctx.Bool(TraceDisableStackFlag.Name),
 			EnableMemory:     !ctx.Bool(TraceDisableMemoryFlag.Name) || ctx.Bool(TraceEnableMemoryFlag.Name),

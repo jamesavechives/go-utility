@@ -23,7 +23,6 @@ import (
 	"github.com/yanhuangpai/go-utility/common/mclock"
 	"github.com/yanhuangpai/go-utility/core"
 	"github.com/yanhuangpai/go-utility/core/txpool"
-	"github.com/yanhuangpai/go-utility/ethdb"
 	"github.com/yanhuangpai/go-utility/les/flowcontrol"
 	vfs "github.com/yanhuangpai/go-utility/les/vflux/server"
 	"github.com/yanhuangpai/go-utility/light"
@@ -34,7 +33,8 @@ import (
 	"github.com/yanhuangpai/go-utility/p2p/enr"
 	"github.com/yanhuangpai/go-utility/params"
 	"github.com/yanhuangpai/go-utility/rpc"
-	"github.com/yanhuangpai/go-utility/unc/ethconfig"
+	"github.com/yanhuangpai/go-utility/unc/uncconfig"
+	"github.com/yanhuangpai/go-utility/uncdb"
 )
 
 var (
@@ -44,11 +44,11 @@ var (
 
 const defaultConnectedBias = time.Minute * 3
 
-type ethBackend interface {
+type uncBackend interface {
 	ArchiveMode() bool
 	BlockChain() *core.BlockChain
 	BloomIndexer() *core.ChainIndexer
-	ChainDb() ethdb.Database
+	ChainDb() uncdb.Database
 	Synced() bool
 	TxPool() *txpool.TxPool
 }
@@ -77,7 +77,7 @@ type LesServer struct {
 	p2pSrv *p2p.Server
 }
 
-func NewLesServer(node *node.Node, e ethBackend, config *ethconfig.Config) (*LesServer, error) {
+func NewLesServer(node *node.Node, e uncBackend, config *uncconfig.Config) (*LesServer, error) {
 	lesDb, err := node.OpenDatabase("les.server", 0, 0, "unc/db/lesserver/", false)
 	if err != nil {
 		return nil, err

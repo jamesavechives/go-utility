@@ -29,9 +29,9 @@ import (
 	"github.com/yanhuangpai/go-utility/core/state"
 	"github.com/yanhuangpai/go-utility/core/types"
 	"github.com/yanhuangpai/go-utility/core/vm"
-	"github.com/yanhuangpai/go-utility/ethdb"
 	"github.com/yanhuangpai/go-utility/params"
 	"github.com/yanhuangpai/go-utility/trie"
+	"github.com/yanhuangpai/go-utility/uncdb"
 )
 
 // BlockGen creates blocks for testing.
@@ -109,7 +109,7 @@ func (b *BlockGen) SetParentBeaconRoot(root common.Hash) {
 // There are a few options can be passed as well in order to run some
 // customized rules.
 // - bc:       enables the ability to query historical block hashes for BLOCKHASH
-// - vmConfig: extends the flexibility for customizing evm rules, e.g. enable extra EIPs
+// - vmConfig: extends the flexibility for customizing uvm rules, e.g. enable extra EIPs
 func (b *BlockGen) addTx(bc *BlockChain, vmConfig vm.Config, tx *types.Transaction) {
 	if b.gasPool == nil {
 		b.SetCoinbase(common.Address{})
@@ -151,7 +151,7 @@ func (b *BlockGen) AddTxWithChain(bc *BlockChain, tx *types.Transaction) {
 
 // AddTxWithVMConfig adds a transaction to the generated block. If no coinbase has
 // been set, the block's coinbase is set to the zero address.
-// The evm interpreter can be customized with the provided vm config.
+// The uvm interpreter can be customized with the provided vm config.
 func (b *BlockGen) AddTxWithVMConfig(tx *types.Transaction, config vm.Config) {
 	b.addTx(nil, config, tx)
 }
@@ -302,7 +302,7 @@ func (b *BlockGen) OffsetTime(seconds int64) {
 // Blocks created by GenerateChain do not contain valid proof of work
 // values. Inserting them into BlockChain requires use of FakePow or
 // a similar non-validating proof of work implementation.
-func GenerateChain(config *params.ChainConfig, parent *types.Block, engine consensus.Engine, db ethdb.Database, n int, gen func(int, *BlockGen)) ([]*types.Block, []types.Receipts) {
+func GenerateChain(config *params.ChainConfig, parent *types.Block, engine consensus.Engine, db uncdb.Database, n int, gen func(int, *BlockGen)) ([]*types.Block, []types.Receipts) {
 	if config == nil {
 		config = params.TestChainConfig
 	}
@@ -404,7 +404,7 @@ func GenerateChain(config *params.ChainConfig, parent *types.Block, engine conse
 // GenerateChainWithGenesis is a wrapper of GenerateChain which will initialize
 // genesis block to database first according to the provided genesis specification
 // then generate chain on top.
-func GenerateChainWithGenesis(genesis *Genesis, engine consensus.Engine, n int, gen func(int, *BlockGen)) (ethdb.Database, []*types.Block, []types.Receipts) {
+func GenerateChainWithGenesis(genesis *Genesis, engine consensus.Engine, n int, gen func(int, *BlockGen)) (uncdb.Database, []*types.Block, []types.Receipts) {
 	db := rawdb.NewMemoryDatabase()
 	triedb := trie.NewDatabase(db, trie.HashDefaults)
 	defer triedb.Close()
@@ -453,7 +453,7 @@ func (cm *chainMaker) makeHeader(parent *types.Block, state *state.StateDB, engi
 }
 
 // makeHeaderChain creates a deterministic chain of headers rooted at parent.
-func makeHeaderChain(chainConfig *params.ChainConfig, parent *types.Header, n int, engine consensus.Engine, db ethdb.Database, seed int) []*types.Header {
+func makeHeaderChain(chainConfig *params.ChainConfig, parent *types.Header, n int, engine consensus.Engine, db uncdb.Database, seed int) []*types.Header {
 	blocks := makeBlockChain(chainConfig, types.NewBlockWithHeader(parent), n, engine, db, seed)
 	headers := make([]*types.Header, len(blocks))
 	for i, block := range blocks {
@@ -463,7 +463,7 @@ func makeHeaderChain(chainConfig *params.ChainConfig, parent *types.Header, n in
 }
 
 // makeHeaderChainWithGenesis creates a deterministic chain of headers from genesis.
-func makeHeaderChainWithGenesis(genesis *Genesis, n int, engine consensus.Engine, seed int) (ethdb.Database, []*types.Header) {
+func makeHeaderChainWithGenesis(genesis *Genesis, n int, engine consensus.Engine, seed int) (uncdb.Database, []*types.Header) {
 	db, blocks := makeBlockChainWithGenesis(genesis, n, engine, seed)
 	headers := make([]*types.Header, len(blocks))
 	for i, block := range blocks {
@@ -473,7 +473,7 @@ func makeHeaderChainWithGenesis(genesis *Genesis, n int, engine consensus.Engine
 }
 
 // makeBlockChain creates a deterministic chain of blocks rooted at parent.
-func makeBlockChain(chainConfig *params.ChainConfig, parent *types.Block, n int, engine consensus.Engine, db ethdb.Database, seed int) []*types.Block {
+func makeBlockChain(chainConfig *params.ChainConfig, parent *types.Block, n int, engine consensus.Engine, db uncdb.Database, seed int) []*types.Block {
 	blocks, _ := GenerateChain(chainConfig, parent, engine, db, n, func(i int, b *BlockGen) {
 		b.SetCoinbase(common.Address{0: byte(seed), 19: byte(i)})
 	})
@@ -481,7 +481,7 @@ func makeBlockChain(chainConfig *params.ChainConfig, parent *types.Block, n int,
 }
 
 // makeBlockChain creates a deterministic chain of blocks from genesis
-func makeBlockChainWithGenesis(genesis *Genesis, n int, engine consensus.Engine, seed int) (ethdb.Database, []*types.Block) {
+func makeBlockChainWithGenesis(genesis *Genesis, n int, engine consensus.Engine, seed int) (uncdb.Database, []*types.Block) {
 	db, blocks, _ := GenerateChainWithGenesis(genesis, engine, n, func(i int, b *BlockGen) {
 		b.SetCoinbase(common.Address{0: byte(seed), 19: byte(i)})
 	})

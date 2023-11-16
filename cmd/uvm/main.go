@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with go-utility. If not, see <http://www.gnu.org/licenses/>.
 
-// evm executes EVM code snippets.
+// uvm executes UVM code snippets.
 package main
 
 import (
@@ -23,7 +23,7 @@ import (
 	"os"
 
 	"github.com/urfave/cli/v2"
-	"github.com/yanhuangpai/go-utility/cmd/evm/internal/t8ntool"
+	"github.com/yanhuangpai/go-utility/cmd/uvm/internal/t8ntool"
 	"github.com/yanhuangpai/go-utility/internal/debug"
 	"github.com/yanhuangpai/go-utility/internal/flags"
 )
@@ -41,29 +41,29 @@ var (
 	}
 	CodeFlag = &cli.StringFlag{
 		Name:     "code",
-		Usage:    "EVM code",
+		Usage:    "UVM code",
 		Category: flags.VMCategory,
 	}
 	CodeFileFlag = &cli.StringFlag{
 		Name:     "codefile",
-		Usage:    "File containing EVM code. If '-' is specified, code is read from stdin ",
+		Usage:    "File containing UVM code. If '-' is specified, code is read from stdin ",
 		Category: flags.VMCategory,
 	}
 	GasFlag = &cli.Uint64Flag{
 		Name:     "gas",
-		Usage:    "gas limit for the evm",
+		Usage:    "gas limit for the uvm",
 		Value:    10000000000,
 		Category: flags.VMCategory,
 	}
 	PriceFlag = &flags.BigFlag{
 		Name:     "price",
-		Usage:    "price set for the evm",
+		Usage:    "price set for the uvm",
 		Value:    new(big.Int),
 		Category: flags.VMCategory,
 	}
 	ValueFlag = &flags.BigFlag{
 		Name:     "value",
-		Usage:    "value set for the evm",
+		Usage:    "value set for the uvm",
 		Value:    new(big.Int),
 		Category: flags.VMCategory,
 	}
@@ -74,12 +74,12 @@ var (
 	}
 	InputFlag = &cli.StringFlag{
 		Name:     "input",
-		Usage:    "input for the EVM",
+		Usage:    "input for the UVM",
 		Category: flags.VMCategory,
 	}
 	InputFileFlag = &cli.StringFlag{
 		Name:     "inputfile",
-		Usage:    "file containing input for the EVM",
+		Usage:    "file containing input for the UVM",
 		Category: flags.VMCategory,
 	}
 	BenchFlag = &cli.BoolFlag{
@@ -192,7 +192,7 @@ var blockBuilderCommand = &cli.Command{
 	},
 }
 
-// vmFlags contains flags related to running the EVM.
+// vmFlags contains flags related to running the UVM.
 var vmFlags = []cli.Flag{
 	CodeFlag,
 	CodeFileFlag,
@@ -220,7 +220,7 @@ var traceFlags = []cli.Flag{
 	DisableReturnDataFlag,
 }
 
-var app = flags.NewApp("the evm command line interface")
+var app = flags.NewApp("the uvm command line interface")
 
 func init() {
 	app.Flags = flags.Merge(vmFlags, traceFlags, debug.Flags)

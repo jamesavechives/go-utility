@@ -108,16 +108,16 @@ enum MessageType {
     MessageType_DebugLinkFlashErase = 113 [(wire_debug_in) = true];
 
     // Utility
-    MessageType_UnilityGetPublicKey = 450 [(wire_in) = true];
-    MessageType_UnilityPublicKey = 451 [(wire_out) = true];
-    MessageType_UnilityGetAddress = 56 [(wire_in) = true];
-    MessageType_UnilityAddress = 57 [(wire_out) = true];
-    MessageType_UnilitySignTx = 58 [(wire_in) = true];
-    MessageType_UnilityTxRequest = 59 [(wire_out) = true];
-    MessageType_UnilityTxAck = 60 [(wire_in) = true];
-    MessageType_UnilitySignMessage = 64 [(wire_in) = true];
-    MessageType_UnilityVerifyMessage = 65 [(wire_in) = true];
-    MessageType_UnilityMessageSignature = 66 [(wire_out) = true];
+    MessageType_EthereumGetPublicKey = 450 [(wire_in) = true];
+    MessageType_EthereumPublicKey = 451 [(wire_out) = true];
+    MessageType_EthereumGetAddress = 56 [(wire_in) = true];
+    MessageType_EthereumAddress = 57 [(wire_out) = true];
+    MessageType_EthereumSignTx = 58 [(wire_in) = true];
+    MessageType_EthereumTxRequest = 59 [(wire_out) = true];
+    MessageType_EthereumTxAck = 60 [(wire_in) = true];
+    MessageType_EthereumSignMessage = 64 [(wire_in) = true];
+    MessageType_EthereumVerifyMessage = 65 [(wire_in) = true];
+    MessageType_EthereumMessageSignature = 66 [(wire_out) = true];
 
     // NEM
     MessageType_NEMGetAddress = 67 [(wire_in) = true];

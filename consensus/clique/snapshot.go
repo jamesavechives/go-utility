@@ -25,9 +25,9 @@ import (
 	"github.com/yanhuangpai/go-utility/common/lru"
 	"github.com/yanhuangpai/go-utility/core/rawdb"
 	"github.com/yanhuangpai/go-utility/core/types"
-	"github.com/yanhuangpai/go-utility/ethdb"
 	"github.com/yanhuangpai/go-utility/log"
 	"github.com/yanhuangpai/go-utility/params"
+	"github.com/yanhuangpai/go-utility/uncdb"
 	"golang.org/x/exp/slices"
 )
 
@@ -82,7 +82,7 @@ func newSnapshot(config *params.CliqueConfig, sigcache *sigLRU, number uint64, h
 }
 
 // loadSnapshot loads an existing snapshot from the database.
-func loadSnapshot(config *params.CliqueConfig, sigcache *sigLRU, db ethdb.Database, hash common.Hash) (*Snapshot, error) {
+func loadSnapshot(config *params.CliqueConfig, sigcache *sigLRU, db uncdb.Database, hash common.Hash) (*Snapshot, error) {
 	blob, err := db.Get(append(rawdb.CliqueSnapshotPrefix, hash[:]...))
 	if err != nil {
 		return nil, err
@@ -98,7 +98,7 @@ func loadSnapshot(config *params.CliqueConfig, sigcache *sigLRU, db ethdb.Databa
 }
 
 // store inserts the snapshot into the database.
-func (s *Snapshot) store(db ethdb.Database) error {
+func (s *Snapshot) store(db uncdb.Database) error {
 	blob, err := json.Marshal(s)
 	if err != nil {
 		return err

@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with the go-utility library. If not, see <http://www.gnu.org/licenses/>.
 
-package ethdb
+package uncdb
 
 type Snapshot interface {
 	// Has retrieves if a key is present in the snapshot backing by a key-value

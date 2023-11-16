@@ -25,9 +25,9 @@ import (
 
 	"github.com/yanhuangpai/go-utility/common"
 	"github.com/yanhuangpai/go-utility/core/rawdb"
-	"github.com/yanhuangpai/go-utility/ethdb"
 	"github.com/yanhuangpai/go-utility/log"
 	"github.com/yanhuangpai/go-utility/trie/triestate"
+	"github.com/yanhuangpai/go-utility/uncdb"
 	"golang.org/x/exp/slices"
 )
 
@@ -566,7 +566,7 @@ func checkHistories(freezer *rawdb.ResettableFreezer, start, count uint64, check
 
 // truncateFromHead removes the extra state histories from the head with the given
 // parameters. It returns the number of items removed from the head.
-func truncateFromHead(db ethdb.Batcher, freezer *rawdb.ResettableFreezer, nhead uint64) (int, error) {
+func truncateFromHead(db uncdb.Batcher, freezer *rawdb.ResettableFreezer, nhead uint64) (int, error) {
 	ohead, err := freezer.Ancients()
 	if err != nil {
 		return 0, err
@@ -608,7 +608,7 @@ func truncateFromHead(db ethdb.Batcher, freezer *rawdb.ResettableFreezer, nhead 
 
 // truncateFromTail removes the extra state histories from the tail with the given
 // parameters. It returns the number of items removed from the tail.
-func truncateFromTail(db ethdb.Batcher, freezer *rawdb.ResettableFreezer, ntail uint64) (int, error) {
+func truncateFromTail(db uncdb.Batcher, freezer *rawdb.ResettableFreezer, ntail uint64) (int, error) {
 	ohead, err := freezer.Ancients()
 	if err != nil {
 		return 0, err

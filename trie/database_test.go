@@ -18,13 +18,13 @@ package trie
 
 import (
 	"github.com/yanhuangpai/go-utility/core/rawdb"
-	"github.com/yanhuangpai/go-utility/ethdb"
 	"github.com/yanhuangpai/go-utility/trie/triedb/hashdb"
 	"github.com/yanhuangpai/go-utility/trie/triedb/pathdb"
+	"github.com/yanhuangpai/go-utility/uncdb"
 )
 
 // newTestDatabase initializes the trie database with specified scheme.
-func newTestDatabase(diskdb ethdb.Database, scheme string) *Database {
+func newTestDatabase(diskdb uncdb.Database, scheme string) *Database {
 	config := &Config{Preimages: false}
 	if scheme == rawdb.HashScheme {
 		config.HashDB = &hashdb.Config{

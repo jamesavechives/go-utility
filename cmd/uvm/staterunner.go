@@ -51,7 +51,7 @@ type StatetestResult struct {
 }
 
 func stateTestCmd(ctx *cli.Context) error {
-	// Configure the EVM logger
+	// Configure the UVM logger
 	config := &logger.Config{
 		EnableMemory:     !ctx.Bool(DisableMemoryFlag.Name),
 		DisableStack:     ctx.Bool(DisableStackFlag.Name),

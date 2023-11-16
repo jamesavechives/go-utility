@@ -24,8 +24,8 @@ import (
 	"strings"
 
 	"github.com/dop251/goja"
-	"github.com/yanhuangpai/go-utility/internal/ethapi"
 	"github.com/yanhuangpai/go-utility/internal/jsre/deps"
+	"github.com/yanhuangpai/go-utility/internal/uncapi"
 	"github.com/yanhuangpai/go-utility/log"
 	"github.com/yanhuangpai/go-utility/signer/core"
 	"github.com/yanhuangpai/go-utility/signer/storage"
@@ -227,7 +227,7 @@ func (r *rulesetUI) OnSignerStartup(info core.StartupInfo) {
 	}
 }
 
-func (r *rulesetUI) OnApprovedTx(tx ethapi.SignTransactionResult) {
+func (r *rulesetUI) OnApprovedTx(tx uncapi.SignTransactionResult) {
 	jsonTx, err := json.Marshal(tx)
 	if err != nil {
 		log.Warn("failed marshalling transaction", "tx", tx)

@@ -36,8 +36,8 @@ import (
 	"github.com/yanhuangpai/go-utility/cmd/utils"
 	"github.com/yanhuangpai/go-utility/common"
 	"github.com/yanhuangpai/go-utility/common/hexutil"
-	"github.com/yanhuangpai/go-utility/internal/ethapi"
 	"github.com/yanhuangpai/go-utility/internal/flags"
+	"github.com/yanhuangpai/go-utility/internal/uncapi"
 	"github.com/yanhuangpai/go-utility/internal/version"
 	"github.com/yanhuangpai/go-utility/log"
 	"github.com/yanhuangpai/go-utility/metrics"
@@ -45,7 +45,7 @@ import (
 	"github.com/yanhuangpai/go-utility/params"
 	"github.com/yanhuangpai/go-utility/unc/catalyst"
 	"github.com/yanhuangpai/go-utility/unc/downloader"
-	"github.com/yanhuangpai/go-utility/unc/ethconfig"
+	"github.com/yanhuangpai/go-utility/unc/uncconfig"
 )
 
 var (
@@ -87,18 +87,18 @@ var tomlSettings = toml.Config{
 	},
 }
 
-type ethstatsConfig struct {
+type uncstatsConfig struct {
 	URL string `toml:",omitempty"`
 }
 
-type gethConfig struct {
-	Unc      ethconfig.Config
+type guncconfig struct {
+	Unc      uncconfig.Config
 	Node     node.Config
-	Ethstats ethstatsConfig
+	uncstats uncstatsConfig
 	Metrics  metrics.Config
 }
 
-func loadConfig(file string, cfg *gethConfig) error {
+func loadConfig(file string, cfg *guncconfig) error {
 	f, err := os.Open(file)
 	if err != nil {
 		return err
@@ -124,12 +124,12 @@ func defaultNodeConfig() node.Config {
 	return cfg
 }
 
-// loadBaseConfig loads the gethConfig based on the given command line
+// loadBaseConfig loads the guncconfig based on the given command line
 // parameters and config file.
-func loadBaseConfig(ctx *cli.Context) gethConfig {
+func loadBaseConfig(ctx *cli.Context) guncconfig {
 	// Load defaults.
-	cfg := gethConfig{
-		Unc:     ethconfig.Defaults,
+	cfg := guncconfig{
+		Unc:     uncconfig.Defaults,
 		Node:    defaultNodeConfig(),
 		Metrics: metrics.DefaultConfig,
 	}
@@ -147,7 +147,7 @@ func loadBaseConfig(ctx *cli.Context) gethConfig {
 }
 
 // makeConfigNode loads gunc configuration and creates a blank node instance.
-func makeConfigNode(ctx *cli.Context) (*node.Node, gethConfig) {
+func makeConfigNode(ctx *cli.Context) (*node.Node, guncconfig) {
 	cfg := loadBaseConfig(ctx)
 	stack, err := node.New(&cfg.Node)
 	if err != nil {
@@ -158,9 +158,9 @@ func makeConfigNode(ctx *cli.Context) (*node.Node, gethConfig) {
 		utils.Fatalf("Failed to set account manager backends: %v", err)
 	}
 
-	utils.SetEthConfig(ctx, stack, &cfg.Unc)
-	if ctx.IsSet(utils.EthStatsURLFlag.Name) {
-		cfg.Ethstats.URL = ctx.String(utils.EthStatsURLFlag.Name)
+	utils.Setuncconfig(ctx, stack, &cfg.Unc)
+	if ctx.IsSet(utils.UncStatsURLFlag.Name) {
+		cfg.uncstats.URL = ctx.String(utils.UncStatsURLFlag.Name)
 	}
 	applyMetricConfig(ctx, &cfg)
 
@@ -168,7 +168,7 @@ func makeConfigNode(ctx *cli.Context) (*node.Node, gethConfig) {
 }
 
 // makeFullNode loads gunc configuration and creates the Utility backend.
-func makeFullNode(ctx *cli.Context) (*node.Node, ethapi.Backend) {
+func makeFullNode(ctx *cli.Context) (*node.Node, uncapi.Backend) {
 	stack, cfg := makeConfigNode(ctx)
 	if ctx.IsSet(utils.OverrideCancun.Name) {
 		v := ctx.Uint64(utils.OverrideCancun.Name)
@@ -202,8 +202,8 @@ func makeFullNode(ctx *cli.Context) (*node.Node, ethapi.Backend) {
 		utils.RegisterGraphQLService(stack, backend, filterSystem, &cfg.Node)
 	}
 	// Add the Utility Stats daemon if requested.
-	if cfg.Ethstats.URL != "" {
-		utils.RegisterEthStatsService(stack, backend, cfg.Ethstats.URL)
+	if cfg.uncstats.URL != "" {
+		utils.RegisteruncstatsService(stack, backend, cfg.uncstats.URL)
 	}
 	// Configure full-sync tester service if requested
 	if ctx.IsSet(utils.SyncTargetFlag.Name) {
@@ -260,7 +260,7 @@ func dumpConfig(ctx *cli.Context) error {
 	return nil
 }
 
-func applyMetricConfig(ctx *cli.Context, cfg *gethConfig) {
+func applyMetricConfig(ctx *cli.Context, cfg *guncconfig) {
 	if ctx.IsSet(utils.MetricsEnabledFlag.Name) {
 		cfg.Metrics.Enabled = ctx.Bool(utils.MetricsEnabledFlag.Name)
 	}
@@ -307,13 +307,13 @@ func applyMetricConfig(ctx *cli.Context, cfg *gethConfig) {
 
 func deprecated(field string) bool {
 	switch field {
-	case "ethconfig.Config.EVMInterpreter":
+	case "uncconfig.Config.EVMInterpreter":
 		return true
-	case "ethconfig.Config.EWASMInterpreter":
+	case "uncconfig.Config.EWASMInterpreter":
 		return true
-	case "ethconfig.Config.TrieCleanCacheJournal":
+	case "uncconfig.Config.TrieCleanCacheJournal":
 		return true
-	case "ethconfig.Config.TrieCleanCacheRejournal":
+	case "uncconfig.Config.TrieCleanCacheRejournal":
 		return true
 	default:
 		return false

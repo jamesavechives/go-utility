@@ -22,8 +22,8 @@ import (
 
 	"github.com/yanhuangpai/go-utility/common"
 	"github.com/yanhuangpai/go-utility/crypto"
-	"github.com/yanhuangpai/go-utility/ethdb"
 	"github.com/yanhuangpai/go-utility/rlp"
+	"github.com/yanhuangpai/go-utility/uncdb"
 )
 
 // ProofSet stores a set of trie nodes. It implements trie.Database and can also
@@ -115,7 +115,7 @@ func (db *ProofSet) List() ProofList {
 }
 
 // Store writes the contents of the set to the given database
-func (db *ProofSet) Store(target ethdb.KeyValueWriter) {
+func (db *ProofSet) Store(target uncdb.KeyValueWriter) {
 	db.lock.RLock()
 	defer db.lock.RUnlock()
 
@@ -124,11 +124,11 @@ func (db *ProofSet) Store(target ethdb.KeyValueWriter) {
 	}
 }
 
-// ProofList stores an ordered list of trie nodes. It implements ethdb.KeyValueWriter.
+// ProofList stores an ordered list of trie nodes. It implements uncdb.KeyValueWriter.
 type ProofList []rlp.RawValue
 
 // Store writes the contents of the list to the given database
-func (n ProofList) Store(db ethdb.KeyValueWriter) {
+func (n ProofList) Store(db uncdb.KeyValueWriter) {
 	for _, node := range n {
 		db.Put(crypto.Keccak256(node), node)
 	}

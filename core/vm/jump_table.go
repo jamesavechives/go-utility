@@ -24,7 +24,7 @@ import (
 
 type (
 	executionFunc func(pc *uint64, interpreter *EVMInterpreter, callContext *ScopeContext) ([]byte, error)
-	gasFunc       func(*EVM, *Contract, *Stack, *Memory, uint64) (uint64, error) // last parameter is the requested memory size as a uint64
+	gasFunc       func(*UVM, *Contract, *Stack, *Memory, uint64) (uint64, error) // last parameter is the requested memory size as a uint64
 	// memorySizeFunc returns the required size, and if the operation overflowed a uint64
 	memorySizeFunc func(*Stack) (size uint64, overflow bool)
 )
@@ -59,7 +59,7 @@ var (
 	cancunInstructionSet           = newCancunInstructionSet()
 )
 
-// JumpTable contains the EVM opcodes supported at a given fork.
+// JumpTable contains the UVM opcodes supported at a given fork.
 type JumpTable [256]*operation
 
 func validate(jt JumpTable) JumpTable {

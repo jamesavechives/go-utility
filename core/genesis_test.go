@@ -27,10 +27,10 @@ import (
 	"github.com/yanhuangpai/go-utility/consensus/ethash"
 	"github.com/yanhuangpai/go-utility/core/rawdb"
 	"github.com/yanhuangpai/go-utility/core/vm"
-	"github.com/yanhuangpai/go-utility/ethdb"
 	"github.com/yanhuangpai/go-utility/params"
 	"github.com/yanhuangpai/go-utility/trie"
 	"github.com/yanhuangpai/go-utility/trie/triedb/pathdb"
+	"github.com/yanhuangpai/go-utility/uncdb"
 )
 
 func TestInvalidCliqueConfig(t *testing.T) {
@@ -62,14 +62,14 @@ func testSetupGenesis(t *testing.T, scheme string) {
 
 	tests := []struct {
 		name       string
-		fn         func(ethdb.Database) (*params.ChainConfig, common.Hash, error)
+		fn         func(uncdb.Database) (*params.ChainConfig, common.Hash, error)
 		wantConfig *params.ChainConfig
 		wantHash   common.Hash
 		wantErr    error
 	}{
 		{
 			name: "genesis without ChainConfig",
-			fn: func(db ethdb.Database) (*params.ChainConfig, common.Hash, error) {
+			fn: func(db uncdb.Database) (*params.ChainConfig, common.Hash, error) {
 				return SetupGenesisBlock(db, trie.NewDatabase(db, newDbConfig(scheme)), new(Genesis))
 			},
 			wantErr:    errGenesisNoConfig,
@@ -77,7 +77,7 @@ func testSetupGenesis(t *testing.T, scheme string) {
 		},
 		{
 			name: "no block in DB, genesis == nil",
-			fn: func(db ethdb.Database) (*params.ChainConfig, common.Hash, error) {
+			fn: func(db uncdb.Database) (*params.ChainConfig, common.Hash, error) {
 				return SetupGenesisBlock(db, trie.NewDatabase(db, newDbConfig(scheme)), nil)
 			},
 			wantHash:   params.MainnetGenesisHash,
@@ -85,7 +85,7 @@ func testSetupGenesis(t *testing.T, scheme string) {
 		},
 		{
 			name: "mainnet block in DB, genesis == nil",
-			fn: func(db ethdb.Database) (*params.ChainConfig, common.Hash, error) {
+			fn: func(db uncdb.Database) (*params.ChainConfig, common.Hash, error) {
 				DefaultGenesisBlock().MustCommit(db, trie.NewDatabase(db, newDbConfig(scheme)))
 				return SetupGenesisBlock(db, trie.NewDatabase(db, newDbConfig(scheme)), nil)
 			},
@@ -94,7 +94,7 @@ func testSetupGenesis(t *testing.T, scheme string) {
 		},
 		{
 			name: "custom block in DB, genesis == nil",
-			fn: func(db ethdb.Database) (*params.ChainConfig, common.Hash, error) {
+			fn: func(db uncdb.Database) (*params.ChainConfig, common.Hash, error) {
 				tdb := trie.NewDatabase(db, newDbConfig(scheme))
 				customg.Commit(db, tdb)
 				return SetupGenesisBlock(db, tdb, nil)
@@ -104,7 +104,7 @@ func testSetupGenesis(t *testing.T, scheme string) {
 		},
 		{
 			name: "custom block in DB, genesis == goerli",
-			fn: func(db ethdb.Database) (*params.ChainConfig, common.Hash, error) {
+			fn: func(db uncdb.Database) (*params.ChainConfig, common.Hash, error) {
 				tdb := trie.NewDatabase(db, newDbConfig(scheme))
 				customg.Commit(db, tdb)
 				return SetupGenesisBlock(db, tdb, DefaultGoerliGenesisBlock())
@@ -115,7 +115,7 @@ func testSetupGenesis(t *testing.T, scheme string) {
 		},
 		{
 			name: "compatible config in DB",
-			fn: func(db ethdb.Database) (*params.ChainConfig, common.Hash, error) {
+			fn: func(db uncdb.Database) (*params.ChainConfig, common.Hash, error) {
 				tdb := trie.NewDatabase(db, newDbConfig(scheme))
 				oldcustomg.Commit(db, tdb)
 				return SetupGenesisBlock(db, tdb, &customg)
@@ -125,7 +125,7 @@ func testSetupGenesis(t *testing.T, scheme string) {
 		},
 		{
 			name: "incompatible config in DB",
-			fn: func(db ethdb.Database) (*params.ChainConfig, common.Hash, error) {
+			fn: func(db uncdb.Database) (*params.ChainConfig, common.Hash, error) {
 				// Commit the 'old' genesis block with Homestead transition at #2.
 				// Advance to block #4, past the homestead transition block of customg.
 				tdb := trie.NewDatabase(db, newDbConfig(scheme))

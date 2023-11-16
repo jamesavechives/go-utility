@@ -35,11 +35,11 @@ import (
 	"github.com/yanhuangpai/go-utility/core/state"
 	"github.com/yanhuangpai/go-utility/core/types"
 	"github.com/yanhuangpai/go-utility/crypto"
-	"github.com/yanhuangpai/go-utility/ethdb"
 	"github.com/yanhuangpai/go-utility/internal/flags"
 	"github.com/yanhuangpai/go-utility/log"
 	"github.com/yanhuangpai/go-utility/metrics"
 	"github.com/yanhuangpai/go-utility/node"
+	"github.com/yanhuangpai/go-utility/uncdb"
 )
 
 var (
@@ -417,7 +417,7 @@ func exportPreimages(ctx *cli.Context) error {
 	return nil
 }
 
-func parseDumpConfig(ctx *cli.Context, stack *node.Node) (*state.DumpConfig, ethdb.Database, common.Hash, error) {
+func parseDumpConfig(ctx *cli.Context, stack *node.Node) (*state.DumpConfig, uncdb.Database, common.Hash, error) {
 	db := utils.MakeChainDatabase(ctx, stack, true)
 	defer db.Close()
 

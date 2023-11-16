@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with the go-utility library. If not, see <http://www.gnu.org/licenses/>.
 
-package ethapi
+package uncapi
 
 import (
 	"context"
@@ -31,7 +31,7 @@ import (
 
 	"github.com/holiman/uint256"
 	"github.com/stretchr/testify/require"
-	"github.com/utility/go-utility"
+	"github.com/yanhuangpai/go-utility"
 	"github.com/yanhuangpai/go-utility/accounts"
 	"github.com/yanhuangpai/go-utility/common"
 	"github.com/yanhuangpai/go-utility/common/hexutil"
@@ -45,11 +45,11 @@ import (
 	"github.com/yanhuangpai/go-utility/core/types"
 	"github.com/yanhuangpai/go-utility/core/vm"
 	"github.com/yanhuangpai/go-utility/crypto"
-	"github.com/yanhuangpai/go-utility/ethdb"
 	"github.com/yanhuangpai/go-utility/event"
 	"github.com/yanhuangpai/go-utility/internal/blocktest"
 	"github.com/yanhuangpai/go-utility/params"
 	"github.com/yanhuangpai/go-utility/rpc"
+	"github.com/yanhuangpai/go-utility/uncdb"
 	"golang.org/x/exp/slices"
 )
 
@@ -404,7 +404,7 @@ func allBlobTxs(addr common.Address, config *params.ChainConfig) []txData {
 }
 
 type testBackend struct {
-	db      ethdb.Database
+	db      uncdb.Database
 	chain   *core.BlockChain
 	pending *types.Block
 }
@@ -445,7 +445,7 @@ func (b testBackend) SuggestGasTipCap(ctx context.Context) (*big.Int, error) {
 func (b testBackend) FeeHistory(ctx context.Context, blockCount uint64, lastBlock rpc.BlockNumber, rewardPercentiles []float64) (*big.Int, [][]*big.Int, []*big.Int, []float64, error) {
 	return nil, nil, nil, nil, nil
 }
-func (b testBackend) ChainDb() ethdb.Database           { return b.db }
+func (b testBackend) ChainDb() uncdb.Database           { return b.db }
 func (b testBackend) AccountManager() *accounts.Manager { return nil }
 func (b testBackend) ExtRPCEnabled() bool               { return false }
 func (b testBackend) RPCGasCap() uint64                 { return 10000000 }
@@ -536,7 +536,7 @@ func (b testBackend) GetTd(ctx context.Context, hash common.Hash) *big.Int {
 	}
 	return big.NewInt(1)
 }
-func (b testBackend) GetEVM(ctx context.Context, msg *core.Message, state *state.StateDB, header *types.Header, vmConfig *vm.Config, blockContext *vm.BlockContext) (*vm.EVM, func() error) {
+func (b testBackend) GetEVM(ctx context.Context, msg *core.Message, state *state.StateDB, header *types.Header, vmConfig *vm.Config, blockContext *vm.BlockContext) (*vm.UVM, func() error) {
 	vmError := func() error { return nil }
 	if vmConfig == nil {
 		vmConfig = b.chain.GetVMConfig()

@@ -25,7 +25,7 @@ import (
 	"github.com/yanhuangpai/go-utility/core/bloombits"
 	"github.com/yanhuangpai/go-utility/core/rawdb"
 	"github.com/yanhuangpai/go-utility/core/types"
-	"github.com/yanhuangpai/go-utility/ethdb"
+	"github.com/yanhuangpai/go-utility/uncdb"
 )
 
 const (
@@ -38,7 +38,7 @@ const (
 // for the Utility header bloom filters, permitting blazing fast filtering.
 type BloomIndexer struct {
 	size    uint64               // section size to generate bloombits for
-	db      ethdb.Database       // database instance to write index data and metadata into
+	db      uncdb.Database       // database instance to write index data and metadata into
 	gen     *bloombits.Generator // generator to rotate the bloom bits crating the bloom index
 	section uint64               // Section is the section number being processed currently
 	head    common.Hash          // Head is the hash of the last header processed
@@ -46,7 +46,7 @@ type BloomIndexer struct {
 
 // NewBloomIndexer returns a chain indexer that generates bloom bits data for the
 // canonical chain for fast logs filtering.
-func NewBloomIndexer(db ethdb.Database, size, confirms uint64) *ChainIndexer {
+func NewBloomIndexer(db uncdb.Database, size, confirms uint64) *ChainIndexer {
 	backend := &BloomIndexer{
 		db:   db,
 		size: size,

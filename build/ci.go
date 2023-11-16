@@ -71,7 +71,7 @@ var (
 		"COPYING",
 		executablePath("abigen"),
 		executablePath("bootnode"),
-		executablePath("evm"),
+		executablePath("uvm"),
 		executablePath("gunc"),
 		executablePath("rlpdump"),
 		executablePath("clef"),
@@ -88,8 +88,8 @@ var (
 			Description: "Utility bootnode.",
 		},
 		{
-			BinaryName:  "evm",
-			Description: "Developer utility version of the EVM (Utility Virtual Machine) that is capable of running bytecode snippets within a configurable environment and execution mode.",
+			BinaryName:  "uvm",
+			Description: "Developer utility version of the UVM (Utility Virtual Machine) that is capable of running bytecode snippets within a configurable environment and execution mode.",
 		},
 		{
 			BinaryName:  "gunc",
@@ -342,7 +342,7 @@ func downloadSpecTestFixtures(csdb *build.ChecksumDB, cachedir string) string {
 	}
 	ext := ".tar.gz"
 	base := "fixtures_develop" // TODO(MariusVanDerWijden) rename once the version becomes part of the filename
-	url := fmt.Sprintf("https://github.com/utility/execution-spec-tests/releases/download/v%s/%s%s", executionSpecTestsVersion, base, ext)
+	url := fmt.Sprintf("https://github.com/ethereum/execution-spec-tests/releases/download/v%s/%s%s", executionSpecTestsVersion, base, ext)
 	archivePath := filepath.Join(cachedir, base+ext)
 	if err := csdb.DownloadFile(url, archivePath); err != nil {
 		log.Fatal(err)

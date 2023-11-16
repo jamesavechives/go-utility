@@ -21,13 +21,13 @@ import (
 
 	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/syndtr/goleveldb/leveldb/storage"
-	"github.com/yanhuangpai/go-utility/ethdb"
-	"github.com/yanhuangpai/go-utility/ethdb/dbtest"
+	"github.com/yanhuangpai/go-utility/uncdb"
+	"github.com/yanhuangpai/go-utility/uncdb/dbtest"
 )
 
 func TestLevelDB(t *testing.T) {
 	t.Run("DatabaseSuite", func(t *testing.T) {
-		dbtest.TestDatabaseSuite(t, func() ethdb.KeyValueStore {
+		dbtest.TestDatabaseSuite(t, func() uncdb.KeyValueStore {
 			db, err := leveldb.Open(storage.NewMemStorage(), nil)
 			if err != nil {
 				t.Fatal(err)
@@ -40,7 +40,7 @@ func TestLevelDB(t *testing.T) {
 }
 
 func BenchmarkLevelDB(b *testing.B) {
-	dbtest.BenchDatabaseSuite(b, func() ethdb.KeyValueStore {
+	dbtest.BenchDatabaseSuite(b, func() uncdb.KeyValueStore {
 		db, err := leveldb.Open(storage.NewMemStorage(), nil)
 		if err != nil {
 			b.Fatal(err)

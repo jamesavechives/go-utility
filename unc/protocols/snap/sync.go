@@ -35,13 +35,13 @@ import (
 	"github.com/yanhuangpai/go-utility/core/state"
 	"github.com/yanhuangpai/go-utility/core/types"
 	"github.com/yanhuangpai/go-utility/crypto"
-	"github.com/yanhuangpai/go-utility/ethdb"
 	"github.com/yanhuangpai/go-utility/event"
 	"github.com/yanhuangpai/go-utility/log"
 	"github.com/yanhuangpai/go-utility/p2p/msgrate"
 	"github.com/yanhuangpai/go-utility/rlp"
 	"github.com/yanhuangpai/go-utility/trie"
 	"github.com/yanhuangpai/go-utility/trie/trienode"
+	"github.com/yanhuangpai/go-utility/uncdb"
 	"golang.org/x/crypto/sha3"
 )
 
@@ -312,7 +312,7 @@ type accountTask struct {
 	codeTasks  map[common.Hash]struct{}    // Code hashes that need retrieval
 	stateTasks map[common.Hash]common.Hash // Account hashes->roots that need full state retrieval
 
-	genBatch ethdb.Batch     // Batch used by the node generator
+	genBatch uncdb.Batch     // Batch used by the node generator
 	genTrie  *trie.StackTrie // Node generator from storage slots
 
 	done bool // Flag if the task can be removed
@@ -327,7 +327,7 @@ type storageTask struct {
 	root common.Hash     // Storage root hash for this instance
 	req  *storageRequest // Pending request to fill this task
 
-	genBatch ethdb.Batch     // Batch used by the node generator
+	genBatch uncdb.Batch     // Batch used by the node generator
 	genTrie  *trie.StackTrie // Node generator from storage slots
 
 	done bool // Flag if the task can be removed
@@ -408,7 +408,7 @@ type SyncPeer interface {
 //   - The peer delivers a stale response after a previous timeout
 //   - The peer delivers a refusal to serve the requested state
 type Syncer struct {
-	db     ethdb.KeyValueStore // Database to store the trie nodes into (and dedup)
+	db     uncdb.KeyValueStore // Database to store the trie nodes into (and dedup)
 	scheme string              // Node scheme used in node database
 
 	root    common.Hash    // Current state trie root being synced
@@ -462,7 +462,7 @@ type Syncer struct {
 	bytecodeHealDups   uint64             // Number of bytecodes already processed
 	bytecodeHealNops   uint64             // Number of bytecodes not requested
 
-	stateWriter        ethdb.Batch        // Shared batch writer used for persisting raw states
+	stateWriter        uncdb.Batch        // Shared batch writer used for persisting raw states
 	accountHealed      uint64             // Number of accounts downloaded during the healing stage
 	accountHealedBytes common.StorageSize // Number of raw account bytes persisted to disk during the healing stage
 	storageHealed      uint64             // Number of storage slots downloaded during the healing stage
@@ -477,7 +477,7 @@ type Syncer struct {
 
 // NewSyncer creates a new snapshot syncer to download the Utility state over the
 // snap protocol.
-func NewSyncer(db ethdb.KeyValueStore, scheme string) *Syncer {
+func NewSyncer(db uncdb.KeyValueStore, scheme string) *Syncer {
 	return &Syncer{
 		db:     db,
 		scheme: scheme,
@@ -717,7 +717,7 @@ func (s *Syncer) Sync(root common.Hash, cancel chan struct{}) error {
 }
 
 // cleanPath is used to remove the dangling nodes in the stackTrie.
-func (s *Syncer) cleanPath(batch ethdb.Batch, owner common.Hash, path []byte) {
+func (s *Syncer) cleanPath(batch uncdb.Batch, owner common.Hash, path []byte) {
 	if owner == (common.Hash{}) && rawdb.ExistsAccountTrieNode(s.db, path) {
 		rawdb.DeleteAccountTrieNode(batch, path)
 		deletionGauge.Inc(1)
@@ -745,7 +745,7 @@ func (s *Syncer) loadSyncStatus() {
 			for _, task := range s.tasks {
 				task := task // closure for task.genBatch in the stacktrie writer callback
 
-				task.genBatch = ethdb.HookedBatch{
+				task.genBatch = uncdb.HookedBatch{
 					Batch: s.db.NewBatch(),
 					OnPut: func(key []byte, value []byte) {
 						s.accountBytes += common.StorageSize(len(key) + len(value))
@@ -771,7 +771,7 @@ func (s *Syncer) loadSyncStatus() {
 					for _, subtask := range subtasks {
 						subtask := subtask // closure for subtask.genBatch in the stacktrie writer callback
 
-						subtask.genBatch = ethdb.HookedBatch{
+						subtask.genBatch = uncdb.HookedBatch{
 							Batch: s.db.NewBatch(),
 							OnPut: func(key []byte, value []byte) {
 								s.storageBytes += common.StorageSize(len(key) + len(value))
@@ -839,7 +839,7 @@ func (s *Syncer) loadSyncStatus() {
 			// Make sure we don't overflow if the step is not a proper divisor
 			last = common.MaxHash
 		}
-		batch := ethdb.HookedBatch{
+		batch := uncdb.HookedBatch{
 			Batch: s.db.NewBatch(),
 			OnPut: func(key []byte, value []byte) {
 				s.accountBytes += common.StorageSize(len(key) + len(value))
@@ -1982,7 +1982,7 @@ func (s *Syncer) processStorageResponse(res *storageResponse) {
 	if res.subTask != nil {
 		res.subTask.req = nil
 	}
-	batch := ethdb.HookedBatch{
+	batch := uncdb.HookedBatch{
 		Batch: s.db.NewBatch(),
 		OnPut: func(key []byte, value []byte) {
 			s.storageBytes += common.StorageSize(len(key) + len(value))
@@ -2056,7 +2056,7 @@ func (s *Syncer) processStorageResponse(res *storageResponse) {
 						largeStorageGauge.Inc(1)
 					}
 					// Our first task is the one that was just filled by this response.
-					batch := ethdb.HookedBatch{
+					batch := uncdb.HookedBatch{
 						Batch: s.db.NewBatch(),
 						OnPut: func(key []byte, value []byte) {
 							s.storageBytes += common.StorageSize(len(key) + len(value))
@@ -2083,7 +2083,7 @@ func (s *Syncer) processStorageResponse(res *storageResponse) {
 						genTrie:  trie.NewStackTrie(options),
 					})
 					for r.Next() {
-						batch := ethdb.HookedBatch{
+						batch := uncdb.HookedBatch{
 							Batch: s.db.NewBatch(),
 							OnPut: func(key []byte, value []byte) {
 								s.storageBytes += common.StorageSize(len(key) + len(value))
@@ -2210,7 +2210,7 @@ func (s *Syncer) processStorageResponse(res *storageResponse) {
 				}
 			}
 		}
-		if res.subTask.genBatch.ValueSize() > ethdb.IdealBatchSize {
+		if res.subTask.genBatch.ValueSize() > uncdb.IdealBatchSize {
 			if err := res.subTask.genBatch.Write(); err != nil {
 				log.Error("Failed to persist stack slots", "err", err)
 			}
@@ -2315,7 +2315,7 @@ func (s *Syncer) processTrienodeHealResponse(res *trienodeHealResponse) {
 }
 
 func (s *Syncer) commitHealer(force bool) {
-	if !force && s.healer.scheduler.MemSize() < ethdb.IdealBatchSize {
+	if !force && s.healer.scheduler.MemSize() < uncdb.IdealBatchSize {
 		return
 	}
 	batch := s.db.NewBatch()
@@ -2373,7 +2373,7 @@ func (s *Syncer) forwardAccountTask(task *accountTask) {
 	// snapshot generation.
 	oldAccountBytes := s.accountBytes
 
-	batch := ethdb.HookedBatch{
+	batch := uncdb.HookedBatch{
 		Batch: s.db.NewBatch(),
 		OnPut: func(key []byte, value []byte) {
 			s.accountBytes += common.StorageSize(len(key) + len(value))
@@ -2419,7 +2419,7 @@ func (s *Syncer) forwardAccountTask(task *accountTask) {
 	if task.done {
 		task.genTrie.Commit()
 	}
-	if task.genBatch.ValueSize() > ethdb.IdealBatchSize || task.done {
+	if task.genBatch.ValueSize() > uncdb.IdealBatchSize || task.done {
 		if err := task.genBatch.Write(); err != nil {
 			log.Error("Failed to persist stack account", "err", err)
 		}
@@ -3013,7 +3013,7 @@ func (s *Syncer) onHealState(paths [][]byte, value []byte) error {
 		s.storageHealed += 1
 		s.storageHealedBytes += common.StorageSize(1 + 2*common.HashLength + len(value))
 	}
-	if s.stateWriter.ValueSize() > ethdb.IdealBatchSize {
+	if s.stateWriter.ValueSize() > uncdb.IdealBatchSize {
 		s.stateWriter.Write() // It's fine to ignore the error here
 		s.stateWriter.Reset()
 	}

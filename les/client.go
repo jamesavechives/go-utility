@@ -32,8 +32,8 @@ import (
 	"github.com/yanhuangpai/go-utility/core/rawdb"
 	"github.com/yanhuangpai/go-utility/core/types"
 	"github.com/yanhuangpai/go-utility/event"
-	"github.com/yanhuangpai/go-utility/internal/ethapi"
 	"github.com/yanhuangpai/go-utility/internal/shutdowncheck"
+	"github.com/yanhuangpai/go-utility/internal/uncapi"
 	"github.com/yanhuangpai/go-utility/les/vflux"
 	vfc "github.com/yanhuangpai/go-utility/les/vflux/client"
 	"github.com/yanhuangpai/go-utility/light"
@@ -46,8 +46,8 @@ import (
 	"github.com/yanhuangpai/go-utility/rlp"
 	"github.com/yanhuangpai/go-utility/rpc"
 	"github.com/yanhuangpai/go-utility/trie"
-	"github.com/yanhuangpai/go-utility/unc/ethconfig"
 	"github.com/yanhuangpai/go-utility/unc/gasprice"
+	"github.com/yanhuangpai/go-utility/unc/uncconfig"
 )
 
 type LightUnility struct {
@@ -72,7 +72,7 @@ type LightUnility struct {
 	eventMux       *event.TypeMux
 	engine         consensus.Engine
 	accountManager *accounts.Manager
-	netRPCService  *ethapi.NetAPI
+	netRPCService  *uncapi.NetAPI
 
 	p2pServer  *p2p.Server
 	p2pConfig  *p2p.Config
@@ -82,7 +82,7 @@ type LightUnility struct {
 }
 
 // New creates an instance of the light client.
-func New(stack *node.Node, config *ethconfig.Config) (*LightUnility, error) {
+func New(stack *node.Node, config *uncconfig.Config) (*LightUnility, error) {
 	chainDb, err := stack.OpenDatabase("lightchaindata", config.DatabaseCache, config.DatabaseHandles, "unc/db/chaindata/", false)
 	if err != nil {
 		return nil, err
@@ -103,7 +103,7 @@ func New(stack *node.Node, config *ethconfig.Config) (*LightUnility, error) {
 	if _, isCompat := genesisErr.(*params.ConfigCompatError); genesisErr != nil && !isCompat {
 		return nil, genesisErr
 	}
-	engine, err := ethconfig.CreateConsensusEngine(chainConfig, chainDb)
+	engine, err := uncconfig.CreateConsensusEngine(chainConfig, chainDb)
 	if err != nil {
 		return nil, err
 	}
@@ -188,7 +188,7 @@ func New(stack *node.Node, config *ethconfig.Config) (*LightUnility, error) {
 	leth.ApiBackend.gpo = gasprice.NewOracle(leth.ApiBackend, gpoParams)
 
 	leth.handler = newClientHandler(leth)
-	leth.netRPCService = ethapi.NewNetAPI(leth.p2pServer, leth.config.NetworkId)
+	leth.netRPCService = uncapi.NewNetAPI(leth.p2pServer, leth.config.NetworkId)
 
 	// Register the backend on the node
 	stack.RegisterAPIs(leth.APIs())
@@ -288,7 +288,7 @@ func (s *LightDummyAPI) Mining() bool {
 // APIs returns the collection of RPC services the utility package offers.
 // NOTE, some of these services probably need to be moved to somewhere else.
 func (s *LightUnility) APIs() []rpc.API {
-	apis := ethapi.GetAPIs(s.ApiBackend)
+	apis := uncapi.GetAPIs(s.ApiBackend)
 	apis = append(apis, s.engine.APIs(s.BlockChain().HeaderChain())...)
 	return append(apis, []rpc.API{
 		{

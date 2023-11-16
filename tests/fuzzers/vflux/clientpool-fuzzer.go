@@ -25,13 +25,13 @@ import (
 	"time"
 
 	"github.com/yanhuangpai/go-utility/common/mclock"
-	"github.com/yanhuangpai/go-utility/ethdb/memorydb"
 	"github.com/yanhuangpai/go-utility/les/vflux"
 	vfs "github.com/yanhuangpai/go-utility/les/vflux/server"
 	"github.com/yanhuangpai/go-utility/log"
 	"github.com/yanhuangpai/go-utility/p2p/enode"
 	"github.com/yanhuangpai/go-utility/p2p/enr"
 	"github.com/yanhuangpai/go-utility/rlp"
+	"github.com/yanhuangpai/go-utility/uncdb/memorydb"
 )
 
 var (

@@ -22,13 +22,13 @@ import (
 	"time"
 
 	"github.com/yanhuangpai/go-utility/common/mclock"
-	"github.com/yanhuangpai/go-utility/ethdb"
 	"github.com/yanhuangpai/go-utility/les/utils"
 	"github.com/yanhuangpai/go-utility/les/vflux"
 	"github.com/yanhuangpai/go-utility/log"
 	"github.com/yanhuangpai/go-utility/p2p/enode"
 	"github.com/yanhuangpai/go-utility/p2p/nodestate"
 	"github.com/yanhuangpai/go-utility/rlp"
+	"github.com/yanhuangpai/go-utility/uncdb"
 )
 
 var (
@@ -81,7 +81,7 @@ type clientPeer interface {
 }
 
 // NewClientPool creates a new client pool
-func NewClientPool(balanceDb ethdb.KeyValueStore, minCap uint64, connectedBias time.Duration, clock mclock.Clock, synced func() bool) *ClientPool {
+func NewClientPool(balanceDb uncdb.KeyValueStore, minCap uint64, connectedBias time.Duration, clock mclock.Clock, synced func() bool) *ClientPool {
 	setup := newServerSetup()
 	ns := nodestate.NewNodeStateMachine(nil, nil, clock, setup.setup)
 	cp := &ClientPool{

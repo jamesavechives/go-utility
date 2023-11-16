@@ -24,12 +24,12 @@ import (
 	"unsafe"
 
 	"github.com/yanhuangpai/go-utility/common/mclock"
-	"github.com/yanhuangpai/go-utility/ethdb"
 	"github.com/yanhuangpai/go-utility/log"
 	"github.com/yanhuangpai/go-utility/metrics"
 	"github.com/yanhuangpai/go-utility/p2p/enode"
 	"github.com/yanhuangpai/go-utility/p2p/enr"
 	"github.com/yanhuangpai/go-utility/rlp"
+	"github.com/yanhuangpai/go-utility/uncdb"
 )
 
 var (
@@ -65,7 +65,7 @@ type (
 		started, closed     bool
 		lock                sync.Mutex
 		clock               mclock.Clock
-		db                  ethdb.KeyValueStore
+		db                  uncdb.KeyValueStore
 		dbNodeKey           []byte
 		nodes               map[enode.ID]*nodeInfo
 		offlineCallbackList []offlineCallback
@@ -317,7 +317,7 @@ func (f Flags) String() string {
 // NewNodeStateMachine creates a new node state machine.
 // If db is not nil then the node states, fields and active timeouts are persisted.
 // Persistence can be enabled or disabled for each state flag and field.
-func NewNodeStateMachine(db ethdb.KeyValueStore, dbKey []byte, clock mclock.Clock, setup *Setup) *NodeStateMachine {
+func NewNodeStateMachine(db uncdb.KeyValueStore, dbKey []byte, clock mclock.Clock, setup *Setup) *NodeStateMachine {
 	if setup.flags == nil {
 		panic("No state flags defined")
 	}

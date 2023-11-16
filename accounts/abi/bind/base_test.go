@@ -25,7 +25,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/utility/go-utility"
+	"github.com/yanhuangpai/go-utility"
 	"github.com/yanhuangpai/go-utility/accounts/abi"
 	"github.com/yanhuangpai/go-utility/accounts/abi/bind"
 	"github.com/yanhuangpai/go-utility/common"

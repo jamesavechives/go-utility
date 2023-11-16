@@ -1810,13 +1810,13 @@ var bindTests = []struct {
 			"github.com/yanhuangpai/go-utility/accounts/abi/bind/backends"
 			"github.com/yanhuangpai/go-utility/core"
 			"github.com/yanhuangpai/go-utility/crypto"
-			"github.com/yanhuangpai/go-utility/unc/ethconfig"
+			"github.com/yanhuangpai/go-utility/unc/uncconfig"
 	   `,
 		`
 			var (
 				key, _  = crypto.GenerateKey()
 				user, _ = bind.NewKeyedTransactorWithChainID(key, big.NewInt(1337))
-				sim     = backends.NewSimulatedBackend(core.GenesisAlloc{user.From: {Balance: big.NewInt(1000000000000000000)}}, ethconfig.Defaults.Miner.GasCeil)
+				sim     = backends.NewSimulatedBackend(core.GenesisAlloc{user.From: {Balance: big.NewInt(1000000000000000000)}}, uncconfig.Defaults.Miner.GasCeil)
 			)
 			defer sim.Close()
 
@@ -1880,13 +1880,13 @@ var bindTests = []struct {
 			"github.com/yanhuangpai/go-utility/accounts/abi/bind/backends"
 			"github.com/yanhuangpai/go-utility/core"
 			"github.com/yanhuangpai/go-utility/crypto"
-			"github.com/yanhuangpai/go-utility/unc/ethconfig"
+			"github.com/yanhuangpai/go-utility/unc/uncconfig"
 	   `,
 		`
 			var (
 				key, _  = crypto.GenerateKey()
 				user, _ = bind.NewKeyedTransactorWithChainID(key, big.NewInt(1337))
-				sim     = backends.NewSimulatedBackend(core.GenesisAlloc{user.From: {Balance: big.NewInt(1000000000000000000)}}, ethconfig.Defaults.Miner.GasCeil)
+				sim     = backends.NewSimulatedBackend(core.GenesisAlloc{user.From: {Balance: big.NewInt(1000000000000000000)}}, uncconfig.Defaults.Miner.GasCeil)
 			)
 			defer sim.Close()
 	
@@ -1932,13 +1932,13 @@ var bindTests = []struct {
 			"github.com/yanhuangpai/go-utility/accounts/abi/bind/backends"
 			"github.com/yanhuangpai/go-utility/core"
 			"github.com/yanhuangpai/go-utility/crypto"
-			"github.com/yanhuangpai/go-utility/unc/ethconfig"
+			"github.com/yanhuangpai/go-utility/unc/uncconfig"
 		`,
 		tester: `
 			var (
 				key, _  = crypto.GenerateKey()
 				user, _ = bind.NewKeyedTransactorWithChainID(key, big.NewInt(1337))
-				sim     = backends.NewSimulatedBackend(core.GenesisAlloc{user.From: {Balance: big.NewInt(1000000000000000000)}}, ethconfig.Defaults.Miner.GasCeil)
+				sim     = backends.NewSimulatedBackend(core.GenesisAlloc{user.From: {Balance: big.NewInt(1000000000000000000)}}, uncconfig.Defaults.Miner.GasCeil)
 			)
 			defer sim.Close()
 
@@ -1980,13 +1980,13 @@ var bindTests = []struct {
 			"github.com/yanhuangpai/go-utility/accounts/abi/bind/backends"
 			"github.com/yanhuangpai/go-utility/core"
 			"github.com/yanhuangpai/go-utility/crypto"
-			"github.com/yanhuangpai/go-utility/unc/ethconfig"
+			"github.com/yanhuangpai/go-utility/unc/uncconfig"
 		`,
 		tester: `
 			var (
 				key, _  = crypto.GenerateKey()
 				user, _ = bind.NewKeyedTransactorWithChainID(key, big.NewInt(1337))
-				sim     = backends.NewSimulatedBackend(core.GenesisAlloc{user.From: {Balance: big.NewInt(1000000000000000000)}}, ethconfig.Defaults.Miner.GasCeil)
+				sim     = backends.NewSimulatedBackend(core.GenesisAlloc{user.From: {Balance: big.NewInt(1000000000000000000)}}, uncconfig.Defaults.Miner.GasCeil)
 			)
 			defer sim.Close()
 
@@ -2020,13 +2020,13 @@ var bindTests = []struct {
 			"github.com/yanhuangpai/go-utility/accounts/abi/bind/backends"
 			"github.com/yanhuangpai/go-utility/core"
 			"github.com/yanhuangpai/go-utility/crypto"
-			"github.com/yanhuangpai/go-utility/unc/ethconfig"
+			"github.com/yanhuangpai/go-utility/unc/uncconfig"
 		`,
 		tester: `
 			var (
 				key, _  = crypto.GenerateKey()
 				user, _ = bind.NewKeyedTransactorWithChainID(key, big.NewInt(1337))
-				sim     = backends.NewSimulatedBackend(core.GenesisAlloc{user.From: {Balance: big.NewInt(1000000000000000000)}}, ethconfig.Defaults.Miner.GasCeil)
+				sim     = backends.NewSimulatedBackend(core.GenesisAlloc{user.From: {Balance: big.NewInt(1000000000000000000)}}, uncconfig.Defaults.Miner.GasCeil)
 			)
 			_, tx, _, err := DeployRangeKeyword(user, sim)
 			if err != nil {

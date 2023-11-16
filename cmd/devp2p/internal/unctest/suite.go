@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with go-utility. If not, see <http://www.gnu.org/licenses/>.
 
-package ethtest
+package UncTest
 
 import (
 	"time"
@@ -49,7 +49,7 @@ func NewSuite(dest *enode.Node, chainfile string, genesisfile string) (*Suite, e
 	}, nil
 }
 
-func (s *Suite) EthTests() []utesting.Test {
+func (s *Suite) UncTests() []utesting.Test {
 	return []utesting.Test{
 		// status
 		{Name: "TestStatus", Fn: s.TestStatus},

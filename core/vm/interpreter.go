@@ -39,9 +39,9 @@ type ScopeContext struct {
 	Contract *Contract
 }
 
-// EVMInterpreter represents an EVM interpreter
+// EVMInterpreter represents an UVM interpreter
 type EVMInterpreter struct {
-	evm   *EVM
+	uvm   *UVM
 	table *JumpTable
 
 	hasher    crypto.KeccakState // Keccak256 hasher instance shared across opcodes
@@ -52,41 +52,41 @@ type EVMInterpreter struct {
 }
 
 // NewEVMInterpreter returns a new instance of the Interpreter.
-func NewEVMInterpreter(evm *EVM) *EVMInterpreter {
+func NewEVMInterpreter(uvm *UVM) *EVMInterpreter {
 	// If jump table was not initialised we set the default one.
 	var table *JumpTable
 	switch {
-	case evm.chainRules.IsCancun:
+	case uvm.chainRules.IsCancun:
 		table = &cancunInstructionSet
-	case evm.chainRules.IsShanghai:
+	case uvm.chainRules.IsShanghai:
 		table = &shanghaiInstructionSet
-	case evm.chainRules.IsMerge:
+	case uvm.chainRules.IsMerge:
 		table = &mergeInstructionSet
-	case evm.chainRules.IsLondon:
+	case uvm.chainRules.IsLondon:
 		table = &londonInstructionSet
-	case evm.chainRules.IsBerlin:
+	case uvm.chainRules.IsBerlin:
 		table = &berlinInstructionSet
-	case evm.chainRules.IsIstanbul:
+	case uvm.chainRules.IsIstanbul:
 		table = &istanbulInstructionSet
-	case evm.chainRules.IsConstantinople:
+	case uvm.chainRules.IsConstantinople:
 		table = &constantinopleInstructionSet
-	case evm.chainRules.IsByzantium:
+	case uvm.chainRules.IsByzantium:
 		table = &byzantiumInstructionSet
-	case evm.chainRules.IsEIP158:
+	case uvm.chainRules.IsEIP158:
 		table = &spuriousDragonInstructionSet
-	case evm.chainRules.IsEIP150:
+	case uvm.chainRules.IsEIP150:
 		table = &tangerineWhistleInstructionSet
-	case evm.chainRules.IsHomestead:
+	case uvm.chainRules.IsHomestead:
 		table = &homesteadInstructionSet
 	default:
 		table = &frontierInstructionSet
 	}
 	var extraEips []int
-	if len(evm.Config.ExtraEips) > 0 {
+	if len(uvm.Config.ExtraEips) > 0 {
 		// Deep-copy jumptable to prevent modification of opcodes in other tables
 		table = copyJumpTable(table)
 	}
-	for _, eip := range evm.Config.ExtraEips {
+	for _, eip := range uvm.Config.ExtraEips {
 		if err := EnableEIP(eip, table); err != nil {
 			// Disable it, so caller can check if it's activated or not
 			log.Error("EIP activation failed", "eip", eip, "error", err)
@@ -94,8 +94,8 @@ func NewEVMInterpreter(evm *EVM) *EVMInterpreter {
 			extraEips = append(extraEips, eip)
 		}
 	}
-	evm.Config.ExtraEips = extraEips
-	return &EVMInterpreter{evm: evm, table: table}
+	uvm.Config.ExtraEips = extraEips
+	return &EVMInterpreter{uvm: uvm, table: table}
 }
 
 // Run loops and evaluates the contract's code with the given input data and returns
@@ -106,8 +106,8 @@ func NewEVMInterpreter(evm *EVM) *EVMInterpreter {
 // ErrExecutionReverted which means revert-and-keep-gas-left.
 func (in *EVMInterpreter) Run(contract *Contract, input []byte, readOnly bool) (ret []byte, err error) {
 	// Increment the call depth which is restricted to 1024
-	in.evm.depth++
-	defer func() { in.evm.depth-- }()
+	in.uvm.depth++
+	defer func() { in.uvm.depth-- }()
 
 	// Make sure the readOnly is only set if we aren't in readOnly yet.
 	// This also makes sure that the readOnly flag isn't removed for child calls.
@@ -144,7 +144,7 @@ func (in *EVMInterpreter) Run(contract *Contract, input []byte, readOnly bool) (
 		gasCopy uint64 // for EVMLogger to log gas remaining before execution
 		logged  bool   // deferred EVMLogger should ignore already logged steps
 		res     []byte // result of the opcode execution function
-		debug   = in.evm.Config.Tracer != nil
+		debug   = in.uvm.Config.Tracer != nil
 	)
 	// Don't move this deferred function, it's placed before the capturestate-deferred method,
 	// so that it get's executed _after_: the capturestate needs the stacks before
@@ -158,9 +158,9 @@ func (in *EVMInterpreter) Run(contract *Contract, input []byte, readOnly bool) (
 		defer func() {
 			if err != nil {
 				if !logged {
-					in.evm.Config.Tracer.CaptureState(pcCopy, op, gasCopy, cost, callContext, in.returnData, in.evm.depth, err)
+					in.uvm.Config.Tracer.CaptureState(pcCopy, op, gasCopy, cost, callContext, in.returnData, in.uvm.depth, err)
 				} else {
-					in.evm.Config.Tracer.CaptureFault(pcCopy, op, gasCopy, cost, callContext, in.evm.depth, err)
+					in.uvm.Config.Tracer.CaptureFault(pcCopy, op, gasCopy, cost, callContext, in.uvm.depth, err)
 				}
 			}
 		}()
@@ -209,21 +209,21 @@ func (in *EVMInterpreter) Run(contract *Contract, input []byte, readOnly bool) (
 			// Consume the gas and return an error if not enough gas is available.
 			// cost is explicitly set so that the capture state defer method can get the proper cost
 			var dynamicCost uint64
-			dynamicCost, err = operation.dynamicGas(in.evm, contract, stack, mem, memorySize)
+			dynamicCost, err = operation.dynamicGas(in.uvm, contract, stack, mem, memorySize)
 			cost += dynamicCost // for tracing
 			if err != nil || !contract.UseGas(dynamicCost) {
 				return nil, ErrOutOfGas
 			}
 			// Do tracing before memory expansion
 			if debug {
-				in.evm.Config.Tracer.CaptureState(pc, op, gasCopy, cost, callContext, in.returnData, in.evm.depth, err)
+				in.uvm.Config.Tracer.CaptureState(pc, op, gasCopy, cost, callContext, in.returnData, in.uvm.depth, err)
 				logged = true
 			}
 			if memorySize > 0 {
 				mem.Resize(memorySize)
 			}
 		} else if debug {
-			in.evm.Config.Tracer.CaptureState(pc, op, gasCopy, cost, callContext, in.returnData, in.evm.depth, err)
+			in.uvm.Config.Tracer.CaptureState(pc, op, gasCopy, cost, callContext, in.returnData, in.uvm.depth, err)
 			logged = true
 		}
 		// execute the operation

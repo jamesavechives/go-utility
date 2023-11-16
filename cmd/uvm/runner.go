@@ -28,8 +28,8 @@ import (
 	"time"
 
 	"github.com/urfave/cli/v2"
-	"github.com/yanhuangpai/go-utility/cmd/evm/internal/compiler"
 	"github.com/yanhuangpai/go-utility/cmd/utils"
+	"github.com/yanhuangpai/go-utility/cmd/uvm/internal/compiler"
 	"github.com/yanhuangpai/go-utility/common"
 	"github.com/yanhuangpai/go-utility/core"
 	"github.com/yanhuangpai/go-utility/core/rawdb"
@@ -46,9 +46,9 @@ import (
 var runCommand = &cli.Command{
 	Action:      runCmd,
 	Name:        "run",
-	Usage:       "run arbitrary evm binary",
+	Usage:       "run arbitrary uvm binary",
 	ArgsUsage:   "<code>",
-	Description: `The run command runs arbitrary EVM code.`,
+	Description: `The run command runs arbitrary UVM code.`,
 	Flags:       flags.Merge(vmFlags, traceFlags),
 }
 
@@ -285,7 +285,7 @@ func runCmd(ctx *cli.Context) error {
 	}
 
 	if bench || ctx.Bool(StatDumpFlag.Name) {
-		fmt.Fprintf(os.Stderr, `EVM gas used:    %d
+		fmt.Fprintf(os.Stderr, `UVM gas used:    %d
 execution time:  %v
 allocations:     %d
 allocated bytes: %d

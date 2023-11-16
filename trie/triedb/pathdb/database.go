@@ -26,11 +26,11 @@ import (
 	"github.com/yanhuangpai/go-utility/common"
 	"github.com/yanhuangpai/go-utility/core/rawdb"
 	"github.com/yanhuangpai/go-utility/core/types"
-	"github.com/yanhuangpai/go-utility/ethdb"
 	"github.com/yanhuangpai/go-utility/log"
 	"github.com/yanhuangpai/go-utility/params"
 	"github.com/yanhuangpai/go-utility/trie/trienode"
 	"github.com/yanhuangpai/go-utility/trie/triestate"
+	"github.com/yanhuangpai/go-utility/uncdb"
 )
 
 const (
@@ -132,7 +132,7 @@ type Database struct {
 	waitSync   bool                     // Flag if database is deactivated due to initial state sync
 	bufferSize int                      // Memory allowance (in bytes) for caching dirty nodes
 	config     *Config                  // Configuration for database
-	diskdb     ethdb.Database           // Persistent storage for matured trie nodes
+	diskdb     uncdb.Database           // Persistent storage for matured trie nodes
 	tree       *layerTree               // The group for all known layers
 	freezer    *rawdb.ResettableFreezer // Freezer for storing trie histories, nil possible in tests
 	lock       sync.RWMutex             // Lock to prevent mutations from happening at the same time
@@ -141,7 +141,7 @@ type Database struct {
 // New attempts to load an already existing layer from a persistent key-value
 // store (with a number of memory layers from a journal). If the journal is not
 // matched with the base persistent layer, all the recorded diff layers are discarded.
-func New(diskdb ethdb.Database, config *Config) *Database {
+func New(diskdb uncdb.Database, config *Config) *Database {
 	if config == nil {
 		config = Defaults
 	}

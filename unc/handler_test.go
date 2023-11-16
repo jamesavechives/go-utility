@@ -30,10 +30,10 @@ import (
 	"github.com/yanhuangpai/go-utility/core/types"
 	"github.com/yanhuangpai/go-utility/core/vm"
 	"github.com/yanhuangpai/go-utility/crypto"
-	"github.com/yanhuangpai/go-utility/ethdb"
 	"github.com/yanhuangpai/go-utility/event"
 	"github.com/yanhuangpai/go-utility/params"
 	"github.com/yanhuangpai/go-utility/unc/downloader"
+	"github.com/yanhuangpai/go-utility/uncdb"
 )
 
 var (
@@ -131,7 +131,7 @@ func (p *testTxPool) SubscribeTransactions(ch chan<- core.NewTxsEvent, reorgs bo
 // preinitialized with some sane testing defaults and the transaction pool mocked
 // out.
 type testHandler struct {
-	db      ethdb.Database
+	db      uncdb.Database
 	chain   *core.BlockChain
 	txpool  *testTxPool
 	handler *handler

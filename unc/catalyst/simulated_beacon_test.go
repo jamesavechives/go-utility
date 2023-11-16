@@ -31,7 +31,7 @@ import (
 	"github.com/yanhuangpai/go-utility/params"
 	"github.com/yanhuangpai/go-utility/unc"
 	"github.com/yanhuangpai/go-utility/unc/downloader"
-	"github.com/yanhuangpai/go-utility/unc/ethconfig"
+	"github.com/yanhuangpai/go-utility/unc/uncconfig"
 )
 
 func startSimulatedBeaconEthService(t *testing.T, genesis *core.Genesis) (*node.Node, *unc.Utility, *SimulatedBeacon) {
@@ -48,7 +48,7 @@ func startSimulatedBeaconEthService(t *testing.T, genesis *core.Genesis) (*node.
 		t.Fatal("can't create node:", err)
 	}
 
-	ethcfg := &ethconfig.Config{Genesis: genesis, SyncMode: downloader.FullSync, TrieTimeout: time.Minute, TrieDirtyCache: 256, TrieCleanCache: 256}
+	ethcfg := &uncconfig.Config{Genesis: genesis, SyncMode: downloader.FullSync, TrieTimeout: time.Minute, TrieDirtyCache: 256, TrieCleanCache: 256}
 	ethservice, err := unc.New(n, ethcfg)
 	if err != nil {
 		t.Fatal("can't create unc service:", err)

@@ -32,11 +32,11 @@ import (
 	"github.com/yanhuangpai/go-utility/core/bloombits"
 	"github.com/yanhuangpai/go-utility/core/rawdb"
 	"github.com/yanhuangpai/go-utility/core/types"
-	"github.com/yanhuangpai/go-utility/ethdb"
 	"github.com/yanhuangpai/go-utility/event"
 	"github.com/yanhuangpai/go-utility/log"
 	"github.com/yanhuangpai/go-utility/params"
 	"github.com/yanhuangpai/go-utility/rpc"
+	"github.com/yanhuangpai/go-utility/uncdb"
 )
 
 // Config represents the configuration of the filter system.
@@ -56,7 +56,7 @@ func (cfg Config) withDefaults() Config {
 }
 
 type Backend interface {
-	ChainDb() ethdb.Database
+	ChainDb() uncdb.Database
 	HeaderByNumber(ctx context.Context, blockNr rpc.BlockNumber) (*types.Header, error)
 	HeaderByHash(ctx context.Context, blockHash common.Hash) (*types.Header, error)
 	GetBody(ctx context.Context, hash common.Hash, number rpc.BlockNumber) (*types.Body, error)

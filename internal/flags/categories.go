@@ -23,7 +23,7 @@ const (
 	LightCategory      = "LIGHT CLIENT"
 	DevCategory        = "DEVELOPER CHAIN"
 	StateCategory      = "STATE HISTORY MANAGEMENT"
-	TxPoolCategory     = "TRANSACTION POOL (EVM)"
+	TxPoolCategory     = "TRANSACTION POOL (UVM)"
 	BlobPoolCategory   = "TRANSACTION POOL (BLOB)"
 	PerfCategory       = "PERFORMANCE TUNING"
 	AccountCategory    = "ACCOUNT"

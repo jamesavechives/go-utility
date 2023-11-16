@@ -25,13 +25,13 @@ import (
 	"github.com/yanhuangpai/go-utility/core/rawdb"
 	"github.com/yanhuangpai/go-utility/core/types"
 	"github.com/yanhuangpai/go-utility/crypto"
-	"github.com/yanhuangpai/go-utility/ethdb"
-	"github.com/yanhuangpai/go-utility/ethdb/memorydb"
 	"github.com/yanhuangpai/go-utility/trie/trienode"
+	"github.com/yanhuangpai/go-utility/uncdb"
+	"github.com/yanhuangpai/go-utility/uncdb/memorydb"
 )
 
 // makeTestTrie create a sample test trie to test node-wise reconstruction.
-func makeTestTrie(scheme string) (ethdb.Database, *Database, *StateTrie, map[string][]byte) {
+func makeTestTrie(scheme string) (uncdb.Database, *Database, *StateTrie, map[string][]byte) {
 	// Create an empty trie
 	db := rawdb.NewMemoryDatabase()
 	triedb := newTestDatabase(db, scheme)
@@ -70,7 +70,7 @@ func makeTestTrie(scheme string) (ethdb.Database, *Database, *StateTrie, map[str
 
 // checkTrieContents cross references a reconstructed trie with an expected data
 // content map.
-func checkTrieContents(t *testing.T, db ethdb.Database, scheme string, root []byte, content map[string][]byte, rawTrie bool) {
+func checkTrieContents(t *testing.T, db uncdb.Database, scheme string, root []byte, content map[string][]byte, rawTrie bool) {
 	// Check root availability and trie contents
 	ndb := newTestDatabase(db, scheme)
 	if err := checkTrieConsistency(db, scheme, common.BytesToHash(root), rawTrie); err != nil {
@@ -101,7 +101,7 @@ func checkTrieContents(t *testing.T, db ethdb.Database, scheme string, root []by
 }
 
 // checkTrieConsistency checks that all nodes in a trie are indeed present.
-func checkTrieConsistency(db ethdb.Database, scheme string, root common.Hash, rawTrie bool) error {
+func checkTrieConsistency(db uncdb.Database, scheme string, root common.Hash, rawTrie bool) error {
 	ndb := newTestDatabase(db, scheme)
 	var it NodeIterator
 	if rawTrie {
@@ -680,7 +680,7 @@ func testSyncOrdering(t *testing.T, scheme string) {
 	}
 }
 
-func syncWith(t *testing.T, root common.Hash, db ethdb.Database, srcDb *Database) {
+func syncWith(t *testing.T, root common.Hash, db uncdb.Database, srcDb *Database) {
 	// Create a destination trie and sync with the scheduler
 	sched := NewSync(root, db, nil, srcDb.Scheme())
 

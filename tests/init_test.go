@@ -42,7 +42,7 @@ var (
 	rlpTestDir         = filepath.Join(baseDir, "RLPTests")
 	difficultyTestDir  = filepath.Join(baseDir, "BasicTests")
 	executionSpecDir   = filepath.Join(".", "spec-tests", "fixtures")
-	benchmarksDir      = filepath.Join(".", "evm-benchmarks", "benchmarks")
+	benchmarksDir      = filepath.Join(".", "uvm-benchmarks", "benchmarks")
 )
 
 func readJSON(reader io.Reader, value interface{}) error {

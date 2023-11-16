@@ -48,7 +48,7 @@ import (
 	"github.com/yanhuangpai/go-utility/trie"
 	"github.com/yanhuangpai/go-utility/unc"
 	"github.com/yanhuangpai/go-utility/unc/downloader"
-	"github.com/yanhuangpai/go-utility/unc/ethconfig"
+	"github.com/yanhuangpai/go-utility/unc/uncconfig"
 )
 
 var (
@@ -299,7 +299,7 @@ func TestEth2NewBlock(t *testing.T) {
 		api    = NewConsensusAPI(ethservice)
 		parent = preMergeBlocks[len(preMergeBlocks)-1]
 
-		// This EVM code generates a log when the contract is created.
+		// This UVM code generates a log when the contract is created.
 		logCode = common.Hex2Bytes("60606040525b7f24ec1d3ff24c2f6ff210738839dbc339cd45a5294d85c79361016243157aae7b60405180905060405180910390a15b600a8060416000396000f360606040526008565b00")
 	)
 	// The event channels.
@@ -449,7 +449,7 @@ func startEthService(t *testing.T, genesis *core.Genesis, blocks []*types.Block)
 		t.Fatal("can't create node:", err)
 	}
 
-	ethcfg := &ethconfig.Config{Genesis: genesis, SyncMode: downloader.FullSync, TrieTimeout: time.Minute, TrieDirtyCache: 256, TrieCleanCache: 256}
+	ethcfg := &uncconfig.Config{Genesis: genesis, SyncMode: downloader.FullSync, TrieTimeout: time.Minute, TrieDirtyCache: 256, TrieCleanCache: 256}
 	ethservice, err := unc.New(n, ethcfg)
 	if err != nil {
 		t.Fatal("can't create unc service:", err)
@@ -473,7 +473,7 @@ func TestFullAPI(t *testing.T) {
 	defer n.Close()
 	var (
 		parent = ethservice.BlockChain().CurrentBlock()
-		// This EVM code generates a log when the contract is created.
+		// This UVM code generates a log when the contract is created.
 		logCode = common.Hex2Bytes("60606040525b7f24ec1d3ff24c2f6ff210738839dbc339cd45a5294d85c79361016243157aae7b60405180905060405180910390a15b600a8060416000396000f360606040526008565b00")
 	)
 
@@ -595,7 +595,7 @@ func TestNewPayloadOnInvalidChain(t *testing.T) {
 		api    = NewConsensusAPI(ethservice)
 		parent = ethservice.BlockChain().CurrentBlock()
 		signer = types.LatestSigner(ethservice.BlockChain().Config())
-		// This EVM code generates a log when the contract is created.
+		// This UVM code generates a log when the contract is created.
 		logCode = common.Hex2Bytes("60606040525b7f24ec1d3ff24c2f6ff210738839dbc339cd45a5294d85c79361016243157aae7b60405180905060405180910390a15b600a8060416000396000f360606040526008565b00")
 	)
 	for i := 0; i < 10; i++ {
@@ -1277,7 +1277,7 @@ func setupBodies(t *testing.T) (*node.Node, *unc.Utility, []*types.Block) {
 
 	var (
 		parent = ethservice.BlockChain().CurrentBlock()
-		// This EVM code generates a log when the contract is created.
+		// This UVM code generates a log when the contract is created.
 		logCode = common.Hex2Bytes("60606040525b7f24ec1d3ff24c2f6ff210738839dbc339cd45a5294d85c79361016243157aae7b60405180905060405180910390a15b600a8060416000396000f360606040526008565b00")
 	)
 

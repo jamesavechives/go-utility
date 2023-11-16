@@ -23,8 +23,8 @@ package remotedb
 
 import (
 	"github.com/yanhuangpai/go-utility/common/hexutil"
-	"github.com/yanhuangpai/go-utility/ethdb"
 	"github.com/yanhuangpai/go-utility/rpc"
+	"github.com/yanhuangpai/go-utility/uncdb"
 )
 
 // Database is a key-value lookup for a remote database via debug_dbGet.
@@ -82,7 +82,7 @@ func (db *Database) AncientSize(kind string) (uint64, error) {
 	panic("not supported")
 }
 
-func (db *Database) ReadAncients(fn func(op ethdb.AncientReaderOp) error) (err error) {
+func (db *Database) ReadAncients(fn func(op uncdb.AncientReaderOp) error) (err error) {
 	return fn(db)
 }
 
@@ -94,7 +94,7 @@ func (db *Database) Delete(key []byte) error {
 	panic("not supported")
 }
 
-func (db *Database) ModifyAncients(f func(ethdb.AncientWriteOp) error) (int64, error) {
+func (db *Database) ModifyAncients(f func(uncdb.AncientWriteOp) error) (int64, error) {
 	panic("not supported")
 }
 
@@ -114,15 +114,15 @@ func (db *Database) MigrateTable(s string, f func([]byte) ([]byte, error)) error
 	panic("not supported")
 }
 
-func (db *Database) NewBatch() ethdb.Batch {
+func (db *Database) NewBatch() uncdb.Batch {
 	panic("not supported")
 }
 
-func (db *Database) NewBatchWithSize(size int) ethdb.Batch {
+func (db *Database) NewBatchWithSize(size int) uncdb.Batch {
 	panic("not supported")
 }
 
-func (db *Database) NewIterator(prefix []byte, start []byte) ethdb.Iterator {
+func (db *Database) NewIterator(prefix []byte, start []byte) uncdb.Iterator {
 	panic("not supported")
 }
 
@@ -138,7 +138,7 @@ func (db *Database) Compact(start []byte, limit []byte) error {
 	return nil
 }
 
-func (db *Database) NewSnapshot() (ethdb.Snapshot, error) {
+func (db *Database) NewSnapshot() (uncdb.Snapshot, error) {
 	panic("not supported")
 }
 
@@ -147,7 +147,7 @@ func (db *Database) Close() error {
 	return nil
 }
 
-func New(client *rpc.Client) ethdb.Database {
+func New(client *rpc.Client) uncdb.Database {
 	return &Database{
 		remote: client,
 	}

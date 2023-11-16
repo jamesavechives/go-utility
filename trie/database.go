@@ -20,12 +20,12 @@ import (
 	"errors"
 
 	"github.com/yanhuangpai/go-utility/common"
-	"github.com/yanhuangpai/go-utility/ethdb"
 	"github.com/yanhuangpai/go-utility/log"
 	"github.com/yanhuangpai/go-utility/trie/triedb/hashdb"
 	"github.com/yanhuangpai/go-utility/trie/triedb/pathdb"
 	"github.com/yanhuangpai/go-utility/trie/trienode"
 	"github.com/yanhuangpai/go-utility/trie/triestate"
+	"github.com/yanhuangpai/go-utility/uncdb"
 )
 
 // Config defines all necessary options for database.
@@ -80,14 +80,14 @@ type backend interface {
 // relevant with trie nodes and node preimages.
 type Database struct {
 	config    *Config        // Configuration for trie database
-	diskdb    ethdb.Database // Persistent database to store the snapshot
+	diskdb    uncdb.Database // Persistent database to store the snapshot
 	preimages *preimageStore // The store for caching preimages
 	backend   backend        // The backend for managing trie nodes
 }
 
 // NewDatabase initializes the trie database with default settings, note
 // the legacy hash-based scheme is used by default.
-func NewDatabase(diskdb ethdb.Database, config *Config) *Database {
+func NewDatabase(diskdb uncdb.Database, config *Config) *Database {
 	// Sanitize the config and use the default one if it's not specified.
 	if config == nil {
 		config = HashDefaults

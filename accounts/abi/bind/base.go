@@ -24,7 +24,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/utility/go-utility"
+	"github.com/yanhuangpai/go-utility"
 	"github.com/yanhuangpai/go-utility/accounts/abi"
 	"github.com/yanhuangpai/go-utility/common"
 	"github.com/yanhuangpai/go-utility/core/types"

@@ -32,7 +32,7 @@ import (
 	"github.com/yanhuangpai/go-utility/miner"
 	"github.com/yanhuangpai/go-utility/node"
 	"github.com/yanhuangpai/go-utility/unc"
-	"github.com/yanhuangpai/go-utility/unc/ethconfig"
+	"github.com/yanhuangpai/go-utility/unc/uncconfig"
 )
 
 const (
@@ -84,7 +84,7 @@ type tester struct {
 
 // newTester creates a test environment based on which the console can operate.
 // Please ensure you call Close() on the returned tester to avoid leaks.
-func newTester(t *testing.T, confOverride func(*ethconfig.Config)) *tester {
+func newTester(t *testing.T, confOverride func(*uncconfig.Config)) *tester {
 	// Create a temporary storage for the node keys and initialize it
 	workspace := t.TempDir()
 
@@ -93,7 +93,7 @@ func newTester(t *testing.T, confOverride func(*ethconfig.Config)) *tester {
 	if err != nil {
 		t.Fatalf("failed to create node: %v", err)
 	}
-	ethConf := &ethconfig.Config{
+	ethConf := &uncconfig.Config{
 		Genesis: core.DeveloperGenesisBlock(11_500_000, common.Address{}),
 		Miner: miner.Config{
 			Unicrpytbase: common.HexToAddress(testAddress),
@@ -102,7 +102,7 @@ func newTester(t *testing.T, confOverride func(*ethconfig.Config)) *tester {
 	if confOverride != nil {
 		confOverride(ethConf)
 	}
-	ethBackend, err := unc.New(stack, ethConf)
+	uncBackend, err := unc.New(stack, ethConf)
 	if err != nil {
 		t.Fatalf("failed to register Utility protocol: %v", err)
 	}
@@ -133,7 +133,7 @@ func newTester(t *testing.T, confOverride func(*ethconfig.Config)) *tester {
 	return &tester{
 		workspace: workspace,
 		stack:     stack,
-		utility:   ethBackend,
+		utility:   uncBackend,
 		console:   console,
 		input:     prompter,
 		output:    printer,

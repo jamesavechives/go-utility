@@ -51,7 +51,7 @@ func blockTestCmd(ctx *cli.Context) error {
 	}
 
 	var tracer vm.EVMLogger
-	// Configure the EVM logger
+	// Configure the UVM logger
 	if ctx.Bool(MachineFlag.Name) {
 		tracer = logger.NewJSONLogger(&logger.Config{
 			EnableMemory:     !ctx.Bool(DisableMemoryFlag.Name),

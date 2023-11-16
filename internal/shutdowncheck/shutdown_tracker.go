@@ -21,21 +21,21 @@ import (
 
 	"github.com/yanhuangpai/go-utility/common"
 	"github.com/yanhuangpai/go-utility/core/rawdb"
-	"github.com/yanhuangpai/go-utility/ethdb"
 	"github.com/yanhuangpai/go-utility/log"
+	"github.com/yanhuangpai/go-utility/uncdb"
 )
 
 // ShutdownTracker is a service that reports previous unclean shutdowns
 // upon start. It needs to be started after a successful start-up and stopped
 // after a successful shutdown, just before the db is closed.
 type ShutdownTracker struct {
-	db     ethdb.Database
+	db     uncdb.Database
 	stopCh chan struct{}
 }
 
 // NewShutdownTracker creates a new ShutdownTracker instance and has
 // no other side-effect.
-func NewShutdownTracker(db ethdb.Database) *ShutdownTracker {
+func NewShutdownTracker(db uncdb.Database) *ShutdownTracker {
 	return &ShutdownTracker{
 		db:     db,
 		stopCh: make(chan struct{}),

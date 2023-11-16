@@ -31,13 +31,13 @@ import (
 	"github.com/yanhuangpai/go-utility/core/rawdb"
 	"github.com/yanhuangpai/go-utility/core/types"
 	"github.com/yanhuangpai/go-utility/crypto"
-	"github.com/yanhuangpai/go-utility/ethdb"
 	"github.com/yanhuangpai/go-utility/log"
 	"github.com/yanhuangpai/go-utility/rlp"
 	"github.com/yanhuangpai/go-utility/trie"
 	"github.com/yanhuangpai/go-utility/trie/testutil"
 	"github.com/yanhuangpai/go-utility/trie/triedb/pathdb"
 	"github.com/yanhuangpai/go-utility/trie/trienode"
+	"github.com/yanhuangpai/go-utility/uncdb"
 	"golang.org/x/crypto/sha3"
 	"golang.org/x/exp/slices"
 )
@@ -1827,7 +1827,7 @@ func makeUnevenStorageTrie(owner common.Hash, slots int, db *trie.Database) (com
 	return root, nodes, entries
 }
 
-func verifyTrie(scheme string, db ethdb.KeyValueStore, root common.Hash, t *testing.T) {
+func verifyTrie(scheme string, db uncdb.KeyValueStore, root common.Hash, t *testing.T) {
 	t.Helper()
 	triedb := trie.NewDatabase(rawdb.NewDatabase(db), newDbConfig(scheme))
 	accTrie, err := trie.New(trie.StateTrieID(root), triedb)

@@ -21,9 +21,9 @@ import (
 	"sync"
 
 	"github.com/yanhuangpai/go-utility/core/rawdb"
-	"github.com/yanhuangpai/go-utility/ethdb"
 	"github.com/yanhuangpai/go-utility/log"
 	"github.com/yanhuangpai/go-utility/rlp"
+	"github.com/yanhuangpai/go-utility/uncdb"
 )
 
 // transitionStatus describes the status of eth1/2 transition. This switch
@@ -37,13 +37,13 @@ type transitionStatus struct {
 // Merger is an internal help structure used to track the eth1/2 transition status.
 // It's a common structure can be used in both full node and light client.
 type Merger struct {
-	db     ethdb.KeyValueStore
+	db     uncdb.KeyValueStore
 	status transitionStatus
 	mu     sync.RWMutex
 }
 
 // NewMerger creates a new Merger which stores its transition status in the provided db.
-func NewMerger(db ethdb.KeyValueStore) *Merger {
+func NewMerger(db uncdb.KeyValueStore) *Merger {
 	var status transitionStatus
 	blob := rawdb.ReadTransitionStatus(db)
 	if len(blob) != 0 {

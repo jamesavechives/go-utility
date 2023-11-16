@@ -29,13 +29,13 @@ import (
 	"github.com/yanhuangpai/go-utility/core"
 	"github.com/yanhuangpai/go-utility/core/types"
 	"github.com/yanhuangpai/go-utility/crypto"
-	"github.com/yanhuangpai/go-utility/ethclient"
 	"github.com/yanhuangpai/go-utility/node"
 	"github.com/yanhuangpai/go-utility/params"
 	"github.com/yanhuangpai/go-utility/rpc"
 	"github.com/yanhuangpai/go-utility/unc"
-	"github.com/yanhuangpai/go-utility/unc/ethconfig"
 	"github.com/yanhuangpai/go-utility/unc/filters"
+	"github.com/yanhuangpai/go-utility/unc/uncconfig"
+	ethclient "github.com/yanhuangpai/go-utility/uncclient"
 )
 
 var (
@@ -57,7 +57,7 @@ func newTestBackend(t *testing.T) (*node.Node, []*types.Block) {
 		t.Fatalf("can't create new node: %v", err)
 	}
 	// Create Utility Service
-	config := &ethconfig.Config{Genesis: genesis}
+	config := &uncconfig.Config{Genesis: genesis}
 	ethservice, err := unc.New(n, config)
 	if err != nil {
 		t.Fatalf("can't create new utility service: %v", err)

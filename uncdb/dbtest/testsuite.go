@@ -23,13 +23,13 @@ import (
 	"sort"
 	"testing"
 
-	"github.com/yanhuangpai/go-utility/ethdb"
+	"github.com/yanhuangpai/go-utility/uncdb"
 	"golang.org/x/exp/slices"
 )
 
 // TestDatabaseSuite runs a suite of tests against a KeyValueStore database
 // implementation.
-func TestDatabaseSuite(t *testing.T, New func() ethdb.KeyValueStore) {
+func TestDatabaseSuite(t *testing.T, New func() uncdb.KeyValueStore) {
 	t.Run("Iterator", func(t *testing.T) {
 		tests := []struct {
 			content map[string]string
@@ -407,7 +407,7 @@ func TestDatabaseSuite(t *testing.T, New func() ethdb.KeyValueStore) {
 
 // BenchDatabaseSuite runs a suite of benchmarks against a KeyValueStore database
 // implementation.
-func BenchDatabaseSuite(b *testing.B, New func() ethdb.KeyValueStore) {
+func BenchDatabaseSuite(b *testing.B, New func() uncdb.KeyValueStore) {
 	var (
 		keys, vals   = makeDataset(1_000_000, 32, 32, false)
 		sKeys, sVals = makeDataset(1_000_000, 32, 32, true)
@@ -500,7 +500,7 @@ func BenchDatabaseSuite(b *testing.B, New func() ethdb.KeyValueStore) {
 	})
 }
 
-func iterateKeys(it ethdb.Iterator) []string {
+func iterateKeys(it uncdb.Iterator) []string {
 	keys := []string{}
 	for it.Next() {
 		keys = append(keys, string(it.Key()))

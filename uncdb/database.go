@@ -14,8 +14,8 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with the go-utility library. If not, see <http://www.gnu.org/licenses/>.
 
-// Package ethdb defines the interfaces for an Utility data store.
-package ethdb
+// Package uncdb defines the interfaces for an Utility data store.
+package uncdb
 
 import "io"
 

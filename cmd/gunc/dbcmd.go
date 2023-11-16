@@ -36,10 +36,10 @@ import (
 	"github.com/yanhuangpai/go-utility/core/rawdb"
 	"github.com/yanhuangpai/go-utility/core/state/snapshot"
 	"github.com/yanhuangpai/go-utility/crypto"
-	"github.com/yanhuangpai/go-utility/ethdb"
 	"github.com/yanhuangpai/go-utility/internal/flags"
 	"github.com/yanhuangpai/go-utility/log"
 	"github.com/yanhuangpai/go-utility/trie"
+	"github.com/yanhuangpai/go-utility/uncdb"
 )
 
 var (
@@ -340,7 +340,7 @@ func checkStateContent(ctx *cli.Context) error {
 	return nil
 }
 
-func showLeveldbStats(db ethdb.KeyValueStater) {
+func showLeveldbStats(db uncdb.KeyValueStater) {
 	if stats, err := db.Stat("leveldb.stats"); err != nil {
 		log.Warn("Failed to read database stats", "error", err)
 	} else {
@@ -599,7 +599,7 @@ func importLDBdata(ctx *cli.Context) error {
 }
 
 type preimageIterator struct {
-	iter ethdb.Iterator
+	iter uncdb.Iterator
 }
 
 func (iter *preimageIterator) Next() (byte, []byte, []byte, bool) {
@@ -618,8 +618,8 @@ func (iter *preimageIterator) Release() {
 
 type snapshotIterator struct {
 	init    bool
-	account ethdb.Iterator
-	storage ethdb.Iterator
+	account uncdb.Iterator
+	storage uncdb.Iterator
 }
 
 func (iter *snapshotIterator) Next() (byte, []byte, []byte, bool) {
@@ -648,12 +648,12 @@ func (iter *snapshotIterator) Release() {
 }
 
 // chainExporters defines the export scheme for all exportable chain data.
-var chainExporters = map[string]func(db ethdb.Database) utils.ChainDataIterator{
-	"preimage": func(db ethdb.Database) utils.ChainDataIterator {
+var chainExporters = map[string]func(db uncdb.Database) utils.ChainDataIterator{
+	"preimage": func(db uncdb.Database) utils.ChainDataIterator {
 		iter := db.NewIterator(rawdb.PreimagePrefix, nil)
 		return &preimageIterator{iter: iter}
 	},
-	"snapshot": func(db ethdb.Database) utils.ChainDataIterator {
+	"snapshot": func(db uncdb.Database) utils.ChainDataIterator {
 		account := db.NewIterator(rawdb.SnapshotAccountPrefix, nil)
 		storage := db.NewIterator(rawdb.SnapshotStoragePrefix, nil)
 		return &snapshotIterator{account: account, storage: storage}

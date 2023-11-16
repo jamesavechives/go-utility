@@ -25,10 +25,10 @@ import (
 	"github.com/yanhuangpai/go-utility/common"
 	"github.com/yanhuangpai/go-utility/core/rawdb"
 	"github.com/yanhuangpai/go-utility/core/types"
-	"github.com/yanhuangpai/go-utility/ethdb"
 	"github.com/yanhuangpai/go-utility/rlp"
 	"github.com/yanhuangpai/go-utility/trie/testutil"
 	"github.com/yanhuangpai/go-utility/trie/triestate"
+	"github.com/yanhuangpai/go-utility/uncdb"
 )
 
 // randomStateSet generates a random state change set.
@@ -102,7 +102,7 @@ func TestEncodeDecodeHistory(t *testing.T) {
 	}
 }
 
-func checkHistory(t *testing.T, db ethdb.KeyValueReader, freezer *rawdb.ResettableFreezer, id uint64, root common.Hash, exist bool) {
+func checkHistory(t *testing.T, db uncdb.KeyValueReader, freezer *rawdb.ResettableFreezer, id uint64, root common.Hash, exist bool) {
 	blob := rawdb.ReadStateHistoryMeta(freezer, id)
 	if exist && len(blob) == 0 {
 		t.Fatalf("Failed to load trie history, %d", id)
@@ -118,7 +118,7 @@ func checkHistory(t *testing.T, db ethdb.KeyValueReader, freezer *rawdb.Resettab
 	}
 }
 
-func checkHistoriesInRange(t *testing.T, db ethdb.KeyValueReader, freezer *rawdb.ResettableFreezer, from, to uint64, roots []common.Hash, exist bool) {
+func checkHistoriesInRange(t *testing.T, db uncdb.KeyValueReader, freezer *rawdb.ResettableFreezer, from, to uint64, roots []common.Hash, exist bool) {
 	for i, j := from, 0; i <= to; i, j = i+1, j+1 {
 		checkHistory(t, db, freezer, i, roots[j], exist)
 	}

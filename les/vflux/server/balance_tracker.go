@@ -21,11 +21,11 @@ import (
 	"time"
 
 	"github.com/yanhuangpai/go-utility/common/mclock"
-	"github.com/yanhuangpai/go-utility/ethdb"
 	"github.com/yanhuangpai/go-utility/les/utils"
 	"github.com/yanhuangpai/go-utility/p2p/enode"
 	"github.com/yanhuangpai/go-utility/p2p/enr"
 	"github.com/yanhuangpai/go-utility/p2p/nodestate"
+	"github.com/yanhuangpai/go-utility/uncdb"
 )
 
 const (
@@ -59,7 +59,7 @@ type balanceTracker struct {
 }
 
 // newBalanceTracker creates a new balanceTracker
-func newBalanceTracker(ns *nodestate.NodeStateMachine, setup *serverSetup, db ethdb.KeyValueStore, clock mclock.Clock, posExp, negExp utils.ValueExpirer) *balanceTracker {
+func newBalanceTracker(ns *nodestate.NodeStateMachine, setup *serverSetup, db uncdb.KeyValueStore, clock mclock.Clock, posExp, negExp utils.ValueExpirer) *balanceTracker {
 	ndb := newNodeDB(db, clock)
 	bt := &balanceTracker{
 		ns:           ns,

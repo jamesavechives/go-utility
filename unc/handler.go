@@ -32,7 +32,6 @@ import (
 	"github.com/yanhuangpai/go-utility/core/rawdb"
 	"github.com/yanhuangpai/go-utility/core/txpool"
 	"github.com/yanhuangpai/go-utility/core/types"
-	"github.com/yanhuangpai/go-utility/ethdb"
 	"github.com/yanhuangpai/go-utility/event"
 	"github.com/yanhuangpai/go-utility/log"
 	"github.com/yanhuangpai/go-utility/metrics"
@@ -42,6 +41,7 @@ import (
 	"github.com/yanhuangpai/go-utility/unc/fetcher"
 	"github.com/yanhuangpai/go-utility/unc/protocols/snap"
 	"github.com/yanhuangpai/go-utility/unc/protocols/unc"
+	"github.com/yanhuangpai/go-utility/uncdb"
 )
 
 const (
@@ -84,7 +84,7 @@ type txPool interface {
 // handlerConfig is the collection of initialization parameters to create a full
 // node network handler.
 type handlerConfig struct {
-	Database       ethdb.Database         // Database for direct sync insertions
+	Database       uncdb.Database         // Database for direct sync insertions
 	Chain          *core.BlockChain       // Blockchain to serve data from
 	TxPool         txPool                 // Transaction pool to propagate from
 	Merger         *consensus.Merger      // The manager for eth1/2 transition
@@ -102,7 +102,7 @@ type handler struct {
 	snapSync atomic.Bool // Flag if snap sync is enabled (gets disabled if we already have blocks)
 	synced   atomic.Bool // Flag if we're considered synchronised (enables transaction processing)
 
-	database ethdb.Database
+	database uncdb.Database
 	txpool   txPool
 	chain    *core.BlockChain
 	maxPeers int
@@ -246,7 +246,7 @@ func newHandler(config *handlerConfig) (*handler, error) {
 			// entirely whenever the transition is started. But in order to
 			// handle the transition boundary reorg in the consensus-layer,
 			// the legacy blocks are still accepted, but only for the terminal
-			// pow blocks. Spec: https://github.com/utility/EIPs/blob/master/EIPS/eip-3675.md#halt-the-importing-of-pow-blocks
+			// pow blocks. Spec: https://github.com/ethereum/EIPs/blob/master/EIPS/eip-3675.md#halt-the-importing-of-pow-blocks
 			for i, block := range blocks {
 				ptd := h.chain.GetTd(block.ParentHash(), block.NumberU64()-1)
 				if ptd == nil {

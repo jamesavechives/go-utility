@@ -46,8 +46,6 @@ import (
 	"github.com/yanhuangpai/go-utility/common"
 	"github.com/yanhuangpai/go-utility/core"
 	"github.com/yanhuangpai/go-utility/core/types"
-	"github.com/yanhuangpai/go-utility/ethclient"
-	"github.com/yanhuangpai/go-utility/ethstats"
 	"github.com/yanhuangpai/go-utility/internal/version"
 	"github.com/yanhuangpai/go-utility/les"
 	"github.com/yanhuangpai/go-utility/log"
@@ -57,7 +55,9 @@ import (
 	"github.com/yanhuangpai/go-utility/p2p/nat"
 	"github.com/yanhuangpai/go-utility/params"
 	"github.com/yanhuangpai/go-utility/unc/downloader"
-	"github.com/yanhuangpai/go-utility/unc/ethconfig"
+	"github.com/yanhuangpai/go-utility/unc/uncconfig"
+	ethclient "github.com/yanhuangpai/go-utility/uncclient"
+	"github.com/yanhuangpai/go-utility/uncstats"
 )
 
 var (
@@ -66,7 +66,7 @@ var (
 	ethPortFlag = flag.Int("ethport", 30303, "Listener port for the devp2p connection")
 	bootFlag    = flag.String("bootnodes", "", "Comma separated bootnode enode URLs to seed with")
 	netFlag     = flag.Uint64("network", 0, "Network ID to use for the Utility protocol")
-	statsFlag   = flag.String("ethstats", "", "Ethstats network monitoring auth string")
+	statsFlag   = flag.String("uncstats", "", "uncstats network monitoring auth string")
 
 	netnameFlag = flag.String("faucet.name", "", "Network name to assign to the faucet")
 	payoutFlag  = flag.Int("faucet.amount", 1, "Number of Unicrpyts to pay out per user request")
@@ -240,7 +240,7 @@ func newFaucet(genesis *core.Genesis, port int, enodes []*enode.Node, network ui
 	}
 
 	// Assemble the Utility light client protocol
-	cfg := ethconfig.Defaults
+	cfg := uncconfig.Defaults
 	cfg.SyncMode = downloader.LightSync
 	cfg.NetworkId = network
 	cfg.Genesis = genesis
@@ -251,9 +251,9 @@ func newFaucet(genesis *core.Genesis, port int, enodes []*enode.Node, network ui
 		return nil, fmt.Errorf("Failed to register the Utility service: %w", err)
 	}
 
-	// Assemble the ethstats monitoring and reporting service'
+	// Assemble the uncstats monitoring and reporting service'
 	if stats != "" {
-		if err := ethstats.New(stack, lesBackend.ApiBackend, lesBackend.Engine(), stats); err != nil {
+		if err := uncstats.New(stack, lesBackend.ApiBackend, lesBackend.Engine(), stats); err != nil {
 			return nil, err
 		}
 	}

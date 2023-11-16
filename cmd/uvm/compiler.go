@@ -21,7 +21,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/yanhuangpai/go-utility/cmd/evm/internal/compiler"
+	"github.com/yanhuangpai/go-utility/cmd/uvm/internal/compiler"
 
 	"github.com/urfave/cli/v2"
 )
@@ -29,7 +29,7 @@ import (
 var compileCommand = &cli.Command{
 	Action:    compileCmd,
 	Name:      "compile",
-	Usage:     "compiles easm source to evm binary",
+	Usage:     "compiles easm source to uvm binary",
 	ArgsUsage: "<file>",
 }
 

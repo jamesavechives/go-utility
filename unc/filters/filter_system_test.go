@@ -35,15 +35,15 @@ import (
 	"github.com/yanhuangpai/go-utility/core/rawdb"
 	"github.com/yanhuangpai/go-utility/core/types"
 	"github.com/yanhuangpai/go-utility/crypto"
-	"github.com/yanhuangpai/go-utility/ethdb"
 	"github.com/yanhuangpai/go-utility/event"
-	"github.com/yanhuangpai/go-utility/internal/ethapi"
+	"github.com/yanhuangpai/go-utility/internal/uncapi"
 	"github.com/yanhuangpai/go-utility/params"
 	"github.com/yanhuangpai/go-utility/rpc"
+	"github.com/yanhuangpai/go-utility/uncdb"
 )
 
 type testBackend struct {
-	db              ethdb.Database
+	db              uncdb.Database
 	sections        uint64
 	txFeed          event.Feed
 	logsFeed        event.Feed
@@ -63,7 +63,7 @@ func (b *testBackend) CurrentHeader() *types.Header {
 	return hdr
 }
 
-func (b *testBackend) ChainDb() ethdb.Database {
+func (b *testBackend) ChainDb() uncdb.Database {
 	return b.db
 }
 
@@ -180,7 +180,7 @@ func (b *testBackend) ServiceFilter(ctx context.Context, session *bloombits.Matc
 	}()
 }
 
-func newTestFilterSystem(t testing.TB, db ethdb.Database, cfg Config) (*testBackend, *FilterSystem) {
+func newTestFilterSystem(t testing.TB, db uncdb.Database, cfg Config) (*testBackend, *FilterSystem) {
 	backend := &testBackend{db: db}
 	sys := NewFilterSystem(backend, cfg)
 	return backend, sys
@@ -318,7 +318,7 @@ func TestPendingTxFilterFullTx(t *testing.T) {
 			types.NewTransaction(4, common.HexToAddress("0xb794f5ea0ba39494ce83a213fffba74279579268"), new(big.Int), 0, new(big.Int), nil),
 		}
 
-		txs []*ethapi.RPCTransaction
+		txs []*uncapi.RPCTransaction
 	)
 
 	fullTx := true
@@ -334,7 +334,7 @@ func TestPendingTxFilterFullTx(t *testing.T) {
 			t.Fatalf("Unable to retrieve logs: %v", err)
 		}
 
-		tx := results.([]*ethapi.RPCTransaction)
+		tx := results.([]*uncapi.RPCTransaction)
 		txs = append(txs, tx...)
 		if len(txs) >= len(transactions) {
 			break

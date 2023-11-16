@@ -27,9 +27,9 @@ import (
 	"testing"
 
 	"github.com/yanhuangpai/go-utility/crypto"
-	"github.com/yanhuangpai/go-utility/ethdb"
 	"github.com/yanhuangpai/go-utility/p2p"
 	"github.com/yanhuangpai/go-utility/rpc"
+	"github.com/yanhuangpai/go-utility/uncdb"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -171,7 +171,7 @@ func TestNodeOpenDatabaseFromLifecycleStart(t *testing.T) {
 	stack, _ := New(testNodeConfig())
 	defer stack.Close()
 
-	var db ethdb.Database
+	var db uncdb.Database
 	var err error
 	stack.RegisterLifecycle(&InstrumentedService{
 		startHook: func() {

@@ -25,9 +25,9 @@ import (
 	"github.com/yanhuangpai/go-utility/core/rawdb"
 	"github.com/yanhuangpai/go-utility/core/types"
 	"github.com/yanhuangpai/go-utility/crypto"
-	"github.com/yanhuangpai/go-utility/ethdb"
 	"github.com/yanhuangpai/go-utility/trie"
 	"github.com/yanhuangpai/go-utility/trie/trienode"
+	"github.com/yanhuangpai/go-utility/uncdb"
 )
 
 const (
@@ -56,7 +56,7 @@ type Database interface {
 	ContractCodeSize(addr common.Address, codeHash common.Hash) (int, error)
 
 	// DiskDB returns the underlying key-value disk database.
-	DiskDB() ethdb.KeyValueStore
+	DiskDB() uncdb.KeyValueStore
 
 	// TrieDB returns the underlying trie database for managing trie nodes.
 	TrieDB() *trie.Database
@@ -129,20 +129,20 @@ type Trie interface {
 	// If the trie does not contain a value for key, the returned proof contains all
 	// nodes of the longest existing prefix of the key (at least the root), ending
 	// with the node that proves the absence of the key.
-	Prove(key []byte, proofDb ethdb.KeyValueWriter) error
+	Prove(key []byte, proofDb uncdb.KeyValueWriter) error
 }
 
 // NewDatabase creates a backing store for state. The returned database is safe for
 // concurrent use, but does not retain any recent trie nodes in memory. To keep some
 // historical state in memory, use the NewDatabaseWithConfig constructor.
-func NewDatabase(db ethdb.Database) Database {
+func NewDatabase(db uncdb.Database) Database {
 	return NewDatabaseWithConfig(db, nil)
 }
 
 // NewDatabaseWithConfig creates a backing store for state. The returned database
 // is safe for concurrent use and retains a lot of collapsed RLP trie nodes in a
 // large memory cache.
-func NewDatabaseWithConfig(db ethdb.Database, config *trie.Config) Database {
+func NewDatabaseWithConfig(db uncdb.Database, config *trie.Config) Database {
 	return &cachingDB{
 		disk:          db,
 		codeSizeCache: lru.NewCache[common.Hash, int](codeSizeCacheSize),
@@ -152,7 +152,7 @@ func NewDatabaseWithConfig(db ethdb.Database, config *trie.Config) Database {
 }
 
 // NewDatabaseWithNodeDB creates a state database with an already initialized node database.
-func NewDatabaseWithNodeDB(db ethdb.Database, triedb *trie.Database) Database {
+func NewDatabaseWithNodeDB(db uncdb.Database, triedb *trie.Database) Database {
 	return &cachingDB{
 		disk:          db,
 		codeSizeCache: lru.NewCache[common.Hash, int](codeSizeCacheSize),
@@ -162,7 +162,7 @@ func NewDatabaseWithNodeDB(db ethdb.Database, triedb *trie.Database) Database {
 }
 
 type cachingDB struct {
-	disk          ethdb.KeyValueStore
+	disk          uncdb.KeyValueStore
 	codeSizeCache *lru.Cache[common.Hash, int]
 	codeCache     *lru.SizeConstrainedCache[common.Hash, []byte]
 	triedb        *trie.Database
@@ -238,7 +238,7 @@ func (db *cachingDB) ContractCodeSize(addr common.Address, codeHash common.Hash)
 }
 
 // DiskDB returns the underlying key-value disk database.
-func (db *cachingDB) DiskDB() ethdb.KeyValueStore {
+func (db *cachingDB) DiskDB() uncdb.KeyValueStore {
 	return db.disk
 }
 

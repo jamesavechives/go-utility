@@ -21,19 +21,19 @@ import (
 
 	"github.com/yanhuangpai/go-utility/common"
 	"github.com/yanhuangpai/go-utility/core/rawdb"
-	"github.com/yanhuangpai/go-utility/ethdb"
+	"github.com/yanhuangpai/go-utility/uncdb"
 )
 
 // preimageStore is the store for caching preimages of node key.
 type preimageStore struct {
 	lock          sync.RWMutex
-	disk          ethdb.KeyValueStore
+	disk          uncdb.KeyValueStore
 	preimages     map[common.Hash][]byte // Preimages of nodes from the secure trie
 	preimagesSize common.StorageSize     // Storage size of the preimages cache
 }
 
 // newPreimageStore initializes the store for caching preimages.
-func newPreimageStore(disk ethdb.KeyValueStore) *preimageStore {
+func newPreimageStore(disk uncdb.KeyValueStore) *preimageStore {
 	return &preimageStore{
 		disk:      disk,
 		preimages: make(map[common.Hash][]byte),

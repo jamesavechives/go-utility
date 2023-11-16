@@ -21,7 +21,7 @@ import (
 	"github.com/yanhuangpai/go-utility/core/vm"
 )
 
-func NewEnv(cfg *Config) *vm.EVM {
+func NewEnv(cfg *Config) *vm.UVM {
 	txContext := vm.TxContext{
 		Origin:     cfg.Origin,
 		GasPrice:   cfg.GasPrice,

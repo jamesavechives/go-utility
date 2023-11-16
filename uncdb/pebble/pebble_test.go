@@ -21,13 +21,13 @@ import (
 
 	"github.com/cockroachdb/pebble"
 	"github.com/cockroachdb/pebble/vfs"
-	"github.com/yanhuangpai/go-utility/ethdb"
-	"github.com/yanhuangpai/go-utility/ethdb/dbtest"
+	"github.com/yanhuangpai/go-utility/uncdb"
+	"github.com/yanhuangpai/go-utility/uncdb/dbtest"
 )
 
 func TestPebbleDB(t *testing.T) {
 	t.Run("DatabaseSuite", func(t *testing.T) {
-		dbtest.TestDatabaseSuite(t, func() ethdb.KeyValueStore {
+		dbtest.TestDatabaseSuite(t, func() uncdb.KeyValueStore {
 			db, err := pebble.Open("", &pebble.Options{
 				FS: vfs.NewMem(),
 			})
@@ -42,7 +42,7 @@ func TestPebbleDB(t *testing.T) {
 }
 
 func BenchmarkPebbleDB(b *testing.B) {
-	dbtest.BenchDatabaseSuite(b, func() ethdb.KeyValueStore {
+	dbtest.BenchDatabaseSuite(b, func() uncdb.KeyValueStore {
 		db, err := pebble.Open("", &pebble.Options{
 			FS: vfs.NewMem(),
 		})

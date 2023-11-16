@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with the go-utility library. If not, see <http://www.gnu.org/licenses/>.
 
-package ethapi
+package uncapi
 
 import (
 	"context"
@@ -24,7 +24,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/utility/go-utility"
+	"github.com/yanhuangpai/go-utility"
 	"github.com/yanhuangpai/go-utility/accounts"
 	"github.com/yanhuangpai/go-utility/common"
 	"github.com/yanhuangpai/go-utility/common/hexutil"
@@ -34,10 +34,10 @@ import (
 	"github.com/yanhuangpai/go-utility/core/state"
 	"github.com/yanhuangpai/go-utility/core/types"
 	"github.com/yanhuangpai/go-utility/core/vm"
-	"github.com/yanhuangpai/go-utility/ethdb"
 	"github.com/yanhuangpai/go-utility/event"
 	"github.com/yanhuangpai/go-utility/params"
 	"github.com/yanhuangpai/go-utility/rpc"
+	"github.com/yanhuangpai/go-utility/uncdb"
 )
 
 // TestSetFeeDefaults tests the logic for filling in default fee values works as expected.
@@ -261,7 +261,7 @@ func (b *backendMock) SyncProgress() utility.SyncProgress { return utility.SyncP
 func (b *backendMock) FeeHistory(ctx context.Context, blockCount uint64, lastBlock rpc.BlockNumber, rewardPercentiles []float64) (*big.Int, [][]*big.Int, []*big.Int, []float64, error) {
 	return nil, nil, nil, nil, nil
 }
-func (b *backendMock) ChainDb() ethdb.Database           { return nil }
+func (b *backendMock) ChainDb() uncdb.Database           { return nil }
 func (b *backendMock) AccountManager() *accounts.Manager { return nil }
 func (b *backendMock) ExtRPCEnabled() bool               { return false }
 func (b *backendMock) RPCGasCap() uint64                 { return 0 }
@@ -305,7 +305,7 @@ func (b *backendMock) GetLogs(ctx context.Context, blockHash common.Hash, number
 	return nil, nil
 }
 func (b *backendMock) GetTd(ctx context.Context, hash common.Hash) *big.Int { return nil }
-func (b *backendMock) GetEVM(ctx context.Context, msg *core.Message, state *state.StateDB, header *types.Header, vmConfig *vm.Config, blockCtx *vm.BlockContext) (*vm.EVM, func() error) {
+func (b *backendMock) GetEVM(ctx context.Context, msg *core.Message, state *state.StateDB, header *types.Header, vmConfig *vm.Config, blockCtx *vm.BlockContext) (*vm.UVM, func() error) {
 	return nil, nil
 }
 func (b *backendMock) SubscribeChainEvent(ch chan<- core.ChainEvent) event.Subscription { return nil }

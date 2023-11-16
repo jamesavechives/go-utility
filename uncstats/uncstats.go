@@ -14,8 +14,8 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with the go-utility library. If not, see <http://www.gnu.org/licenses/>.
 
-// Package ethstats implements the network stats reporting service.
-package ethstats
+// Package uncstats implements the network stats reporting service.
+package uncstats
 
 import (
 	"context"
@@ -44,6 +44,7 @@ import (
 	"github.com/yanhuangpai/go-utility/node"
 	"github.com/yanhuangpai/go-utility/p2p"
 	"github.com/yanhuangpai/go-utility/rpc"
+	uncproto "github.com/yanhuangpai/go-utility/unc/protocols/unc"
 )
 
 const (
@@ -60,7 +61,7 @@ const (
 	messageSizeLimit = 15 * 1024 * 1024
 )
 
-// backend encompasses the bare-minimum functionality needed for ethstats reporting
+// backend encompasses the bare-minimum functionality needed for uncstats reporting
 type backend interface {
 	SubscribeChainHeadEvent(ch chan<- core.ChainHeadEvent) event.Subscription
 	SubscribeNewTxsEvent(ch chan<- core.NewTxsEvent) event.Subscription
@@ -72,7 +73,7 @@ type backend interface {
 }
 
 // fullNodeBackend encompasses the functionality necessary for a full node
-// reporting to ethstats
+// reporting to uncstats
 type fullNodeBackend interface {
 	backend
 	BlockByNumber(ctx context.Context, number rpc.BlockNumber) (*types.Block, error)
@@ -81,7 +82,7 @@ type fullNodeBackend interface {
 }
 
 // miningNodeBackend encompasses the functionality necessary for a mining node
-// reporting to ethstats
+// reporting to uncstats
 type miningNodeBackend interface {
 	fullNodeBackend
 	Miner() *miner.Miner
@@ -155,10 +156,10 @@ func (w *connWrapper) Close() error {
 	return w.conn.Close()
 }
 
-// parseEthstatsURL parses the netstats connection url.
+// parseuncstatsURL parses the netstats connection url.
 // URL argument should be of the form <nodename:secret@host:port>
 // If non-erroring, the returned slice contains 3 elements: [nodename, pass, host]
-func parseEthstatsURL(url string) (parts []string, err error) {
+func parseuncstatsURL(url string) (parts []string, err error) {
 	err = fmt.Errorf("invalid netstats url: \"%s\", should be nodename:secret@host:port", url)
 
 	hostIndex := strings.LastIndex(url, "@")
@@ -181,11 +182,11 @@ func parseEthstatsURL(url string) (parts []string, err error) {
 
 // New returns a monitoring service ready for stats reporting.
 func New(node *node.Node, backend backend, engine consensus.Engine, url string) error {
-	parts, err := parseEthstatsURL(url)
+	parts, err := parseuncstatsURL(url)
 	if err != nil {
 		return err
 	}
-	ethstats := &Service{
+	uncstats := &Service{
 		backend: backend,
 		engine:  engine,
 		server:  node.Server(),
@@ -196,7 +197,7 @@ func New(node *node.Node, backend backend, engine consensus.Engine, url string) 
 		histCh:  make(chan []uint64, 1),
 	}
 
-	node.RegisterLifecycle(ethstats)
+	node.RegisterLifecycle(uncstats)
 	return nil
 }
 
@@ -483,7 +484,7 @@ func (s *Service) login(conn *connWrapper) error {
 	}
 	var network string
 	if info := infos.Protocols["unc"]; info != nil {
-		network = fmt.Sprintf("%d", info.(*ethproto.NodeInfo).Network)
+		network = fmt.Sprintf("%d", info.(*uncproto.NodeInfo).Network)
 	} else {
 		network = fmt.Sprintf("%d", infos.Protocols["les"].(*les.NodeInfo).Network)
 	}
@@ -539,7 +540,7 @@ func (s *Service) report(conn *connWrapper) error {
 // reportLatency sends a ping request to the server, measures the RTT time and
 // finally sends a latency update.
 func (s *Service) reportLatency(conn *connWrapper) error {
-	// Send the current time to the ethstats server
+	// Send the current time to the uncstats server
 	start := time.Now()
 
 	ping := map[string][]interface{}{
@@ -562,7 +563,7 @@ func (s *Service) reportLatency(conn *connWrapper) error {
 	latency := strconv.Itoa(int((time.Since(start) / time.Duration(2)).Nanoseconds() / 1000000))
 
 	// Send back the measured latency
-	log.Trace("Sending measured latency to ethstats", "latency", latency)
+	log.Trace("Sending measured latency to uncstats", "latency", latency)
 
 	stats := map[string][]interface{}{
 		"emit": {"latency", map[string]string{
@@ -612,7 +613,7 @@ func (s *Service) reportBlock(conn *connWrapper, block *types.Block) error {
 	details := s.assembleBlockStats(block)
 
 	// Assemble the block report and send it to the server
-	log.Trace("Sending new block to ethstats", "number", details.Number, "hash", details.Hash)
+	log.Trace("Sending new block to uncstats", "number", details.Number, "hash", details.Hash)
 
 	stats := map[string]interface{}{
 		"id":    s.node,
@@ -724,7 +725,7 @@ func (s *Service) reportHistory(conn *connWrapper, list []uint64) error {
 	}
 	// Assemble the history report and send it to the server
 	if len(history) > 0 {
-		log.Trace("Sending historical blocks to ethstats", "first", history[0].Number, "last", history[len(history)-1].Number)
+		log.Trace("Sending historical blocks to uncstats", "first", history[0].Number, "last", history[len(history)-1].Number)
 	} else {
 		log.Trace("No history to send to stats server")
 	}
@@ -749,7 +750,7 @@ func (s *Service) reportPending(conn *connWrapper) error {
 	// Retrieve the pending count from the local blockchain
 	pending, _ := s.backend.Stats()
 	// Assemble the transaction stats and send it to the server
-	log.Trace("Sending pending transactions to ethstats", "count", pending)
+	log.Trace("Sending pending transactions to uncstats", "count", pending)
 
 	stats := map[string]interface{}{
 		"id": s.node,
@@ -804,7 +805,7 @@ func (s *Service) reportStats(conn *connWrapper) error {
 		syncing = s.backend.CurrentHeader().Number.Uint64() >= sync.HighestBlock
 	}
 	// Assemble the node stats and send it to the server
-	log.Trace("Sending node details to ethstats")
+	log.Trace("Sending node details to uncstats")
 
 	stats := map[string]interface{}{
 		"id": s.node,

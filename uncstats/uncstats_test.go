@@ -14,14 +14,14 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with the go-utility library. If not, see <http://www.gnu.org/licenses/>.
 
-package ethstats
+package uncstats
 
 import (
 	"strconv"
 	"testing"
 )
 
-func TestParseEthstatsURL(t *testing.T) {
+func TestParseuncstatsURL(t *testing.T) {
 	cases := []struct {
 		url              string
 		node, pass, host string
@@ -57,7 +57,7 @@ func TestParseEthstatsURL(t *testing.T) {
 	}
 
 	for i, c := range cases {
-		parts, err := parseEthstatsURL(c.url)
+		parts, err := parseuncstatsURL(c.url)
 		if err != nil {
 			t.Fatal(err)
 		}

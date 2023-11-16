@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with go-utility. If not, see <http://www.gnu.org/licenses/>.
 
-package ethtest
+package UncTest
 
 import (
 	"errors"
@@ -113,7 +113,7 @@ func (c *Conn) handshake() error {
 		if msg.Version >= 5 {
 			c.SetSnappy(true)
 		}
-		c.negotiateEthProtocol(msg.Caps)
+		c.negotiateuncprotocol(msg.Caps)
 		if c.negotiatedProtoVersion == 0 {
 			return fmt.Errorf("could not negotiate unc protocol (remote caps: %v, local unc version: %v)", msg.Caps, c.ourHighestProtoVersion)
 		}
@@ -127,9 +127,9 @@ func (c *Conn) handshake() error {
 	}
 }
 
-// negotiateEthProtocol sets the Conn's unc protocol version to highest
+// negotiateuncprotocol sets the Conn's unc protocol version to highest
 // advertised capability from peer.
-func (c *Conn) negotiateEthProtocol(caps []p2p.Cap) {
+func (c *Conn) negotiateuncprotocol(caps []p2p.Cap) {
 	var highestEthVersion uint
 	var highestSnapVersion uint
 	for _, capability := range caps {

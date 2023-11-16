@@ -23,10 +23,10 @@ import (
 
 	"github.com/yanhuangpai/go-utility/common"
 	"github.com/yanhuangpai/go-utility/core/types"
-	"github.com/yanhuangpai/go-utility/ethdb"
 	"github.com/yanhuangpai/go-utility/internal/blocktest"
 	"github.com/yanhuangpai/go-utility/params"
 	"github.com/yanhuangpai/go-utility/rlp"
+	"github.com/yanhuangpai/go-utility/uncdb"
 )
 
 var newTestHasher = blocktest.NewHasher
@@ -35,17 +35,17 @@ var newTestHasher = blocktest.NewHasher
 func TestLookupStorage(t *testing.T) {
 	tests := []struct {
 		name                        string
-		writeTxLookupEntriesByBlock func(ethdb.Writer, *types.Block)
+		writeTxLookupEntriesByBlock func(uncdb.Writer, *types.Block)
 	}{
 		{
 			"DatabaseV6",
-			func(db ethdb.Writer, block *types.Block) {
+			func(db uncdb.Writer, block *types.Block) {
 				WriteTxLookupEntriesByBlock(db, block)
 			},
 		},
 		{
 			"DatabaseV4-V5",
-			func(db ethdb.Writer, block *types.Block) {
+			func(db uncdb.Writer, block *types.Block) {
 				for _, tx := range block.Transactions() {
 					db.Put(txLookupKey(tx.Hash()), block.Hash().Bytes())
 				}
@@ -53,7 +53,7 @@ func TestLookupStorage(t *testing.T) {
 		},
 		{
 			"DatabaseV3",
-			func(db ethdb.Writer, block *types.Block) {
+			func(db uncdb.Writer, block *types.Block) {
 				for index, tx := range block.Transactions() {
 					entry := LegacyTxLookupEntry{
 						BlockHash:  block.Hash(),

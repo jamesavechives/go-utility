@@ -146,12 +146,12 @@ func testCallTracer(tracerName string, dirPath string, t *testing.T) {
 			if err != nil {
 				t.Fatalf("failed to create call tracer: %v", err)
 			}
-			evm := vm.NewEVM(context, txContext, statedb, test.Genesis.Config, vm.Config{Tracer: tracer})
+			uvm := vm.NewEVM(context, txContext, statedb, test.Genesis.Config, vm.Config{Tracer: tracer})
 			msg, err := core.TransactionToMessage(tx, signer, nil)
 			if err != nil {
 				t.Fatalf("failed to prepare transaction for tracing: %v", err)
 			}
-			vmRet, err := core.ApplyMessage(evm, msg, new(core.GasPool).AddGas(tx.Gas()))
+			vmRet, err := core.ApplyMessage(uvm, msg, new(core.GasPool).AddGas(tx.Gas()))
 			if err != nil {
 				t.Fatalf("failed to execute transaction: %v", err)
 			}
@@ -250,9 +250,9 @@ func benchTracer(tracerName string, test *callTracerTest, b *testing.B) {
 		if err != nil {
 			b.Fatalf("failed to create call tracer: %v", err)
 		}
-		evm := vm.NewEVM(context, txContext, statedb, test.Genesis.Config, vm.Config{Tracer: tracer})
+		uvm := vm.NewEVM(context, txContext, statedb, test.Genesis.Config, vm.Config{Tracer: tracer})
 		snap := statedb.Snapshot()
-		st := core.NewStateTransition(evm, msg, new(core.GasPool).AddGas(tx.Gas()))
+		st := core.NewStateTransition(uvm, msg, new(core.GasPool).AddGas(tx.Gas()))
 		if _, err = st.TransitionDb(); err != nil {
 			b.Fatalf("failed to execute transaction: %v", err)
 		}
@@ -378,7 +378,7 @@ func TestInternals(t *testing.T) {
 				}, false, rawdb.HashScheme)
 			defer triedb.Close()
 
-			evm := vm.NewEVM(context, txContext, statedb, params.MainnetChainConfig, vm.Config{Tracer: tc.tracer})
+			uvm := vm.NewEVM(context, txContext, statedb, params.MainnetChainConfig, vm.Config{Tracer: tc.tracer})
 			msg := &core.Message{
 				To:                &to,
 				From:              origin,
@@ -389,7 +389,7 @@ func TestInternals(t *testing.T) {
 				GasTipCap:         big.NewInt(0),
 				SkipAccountChecks: false,
 			}
-			st := core.NewStateTransition(evm, msg, new(core.GasPool).AddGas(msg.GasLimit))
+			st := core.NewStateTransition(uvm, msg, new(core.GasPool).AddGas(msg.GasLimit))
 			if _, err := st.TransitionDb(); err != nil {
 				t.Fatalf("test %v: failed to execute transaction: %v", tc.name, err)
 			}

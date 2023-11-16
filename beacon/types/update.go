@@ -32,7 +32,7 @@ import (
 // sync committee root.
 //
 // See data structure definition here:
-// https://github.com/utility/consensus-specs/blob/dev/specs/altair/light-client/sync-protocol.md#lightclientupdate
+// https://github.com/ethereum/consensus-specs/blob/dev/specs/altair/light-client/sync-protocol.md#lightclientupdate
 type LightClientUpdate struct {
 	AttestedHeader          SignedHeader  // Arbitrary header out of the period signed by the sync committee
 	NextSyncCommitteeRoot   common.Hash   // Sync committee of the next period advertised in the current one

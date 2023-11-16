@@ -28,7 +28,7 @@ import (
 	"github.com/yanhuangpai/go-utility/core/state"
 	"github.com/yanhuangpai/go-utility/core/types"
 	"github.com/yanhuangpai/go-utility/crypto"
-	"github.com/yanhuangpai/go-utility/internal/ethapi"
+	"github.com/yanhuangpai/go-utility/internal/uncapi"
 	"github.com/yanhuangpai/go-utility/log"
 	"github.com/yanhuangpai/go-utility/rlp"
 	"github.com/yanhuangpai/go-utility/rpc"
@@ -119,7 +119,7 @@ func (api *DebugAPI) GetBadBlocks(ctx context.Context) ([]*BadBlockArgs, error) 
 		} else {
 			blockRlp = fmt.Sprintf("%#x", rlpBytes)
 		}
-		blockJSON = ethapi.RPCMarshalBlock(block, true, true, api.unc.APIBackend.ChainConfig())
+		blockJSON = uncapi.RPCMarshalBlock(block, true, true, api.unc.APIBackend.ChainConfig())
 		results = append(results, &BadBlockArgs{
 			Hash:  block.Hash(),
 			RLP:   blockRlp,

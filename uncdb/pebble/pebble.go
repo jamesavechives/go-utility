@@ -29,9 +29,9 @@ import (
 	"github.com/cockroachdb/pebble"
 	"github.com/cockroachdb/pebble/bloom"
 	"github.com/yanhuangpai/go-utility/common"
-	"github.com/yanhuangpai/go-utility/ethdb"
 	"github.com/yanhuangpai/go-utility/log"
 	"github.com/yanhuangpai/go-utility/metrics"
+	"github.com/yanhuangpai/go-utility/uncdb"
 )
 
 const (
@@ -328,7 +328,7 @@ func (d *Database) Delete(key []byte) error {
 
 // NewBatch creates a write-only key-value store that buffers changes to its host
 // database until a final write is called.
-func (d *Database) NewBatch() ethdb.Batch {
+func (d *Database) NewBatch() uncdb.Batch {
 	return &batch{
 		b:  d.db.NewBatch(),
 		db: d,
@@ -336,7 +336,7 @@ func (d *Database) NewBatch() ethdb.Batch {
 }
 
 // NewBatchWithSize creates a write-only database batch with pre-allocated buffer.
-func (d *Database) NewBatchWithSize(size int) ethdb.Batch {
+func (d *Database) NewBatchWithSize(size int) uncdb.Batch {
 	return &batch{
 		b:  d.db.NewBatchWithSize(size),
 		db: d,
@@ -353,7 +353,7 @@ type snapshot struct {
 // happened on the database.
 // Note don't forget to release the snapshot once it's used up, otherwise
 // the stale data will never be cleaned up by the underlying compactor.
-func (d *Database) NewSnapshot() (ethdb.Snapshot, error) {
+func (d *Database) NewSnapshot() (uncdb.Snapshot, error) {
 	snap := d.db.NewSnapshot()
 	return &snapshot{db: snap}, nil
 }
@@ -587,7 +587,7 @@ func (b *batch) Reset() {
 }
 
 // Replay replays the batch contents.
-func (b *batch) Replay(w ethdb.KeyValueWriter) error {
+func (b *batch) Replay(w uncdb.KeyValueWriter) error {
 	reader := b.b.Reader()
 	for {
 		kind, k, v, ok := reader.Next()
@@ -617,7 +617,7 @@ type pebbleIterator struct {
 // NewIterator creates a binary-alphabetical iterator over a subset
 // of database content with a particular key prefix, starting at a particular
 // initial key (or after, if it does not exist).
-func (d *Database) NewIterator(prefix []byte, start []byte) ethdb.Iterator {
+func (d *Database) NewIterator(prefix []byte, start []byte) uncdb.Iterator {
 	iter, _ := d.db.NewIter(&pebble.IterOptions{
 		LowerBound: append(prefix, start...),
 		UpperBound: upperBound(prefix),

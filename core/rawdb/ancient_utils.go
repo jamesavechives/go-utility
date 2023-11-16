@@ -21,7 +21,7 @@ import (
 	"path/filepath"
 
 	"github.com/yanhuangpai/go-utility/common"
-	"github.com/yanhuangpai/go-utility/ethdb"
+	"github.com/yanhuangpai/go-utility/uncdb"
 )
 
 type tableSize struct {
@@ -51,7 +51,7 @@ func (info *freezerInfo) size() common.StorageSize {
 	return total
 }
 
-func inspect(name string, order map[string]bool, reader ethdb.AncientReader) (freezerInfo, error) {
+func inspect(name string, order map[string]bool, reader uncdb.AncientReader) (freezerInfo, error) {
 	info := freezerInfo{name: name}
 	for t := range order {
 		size, err := reader.AncientSize(t)
@@ -77,7 +77,7 @@ func inspect(name string, order map[string]bool, reader ethdb.AncientReader) (fr
 }
 
 // inspectFreezers inspects all freezers registered in the system.
-func inspectFreezers(db ethdb.Database) ([]freezerInfo, error) {
+func inspectFreezers(db uncdb.Database) ([]freezerInfo, error) {
 	var infos []freezerInfo
 	for _, freezer := range freezers {
 		switch freezer {

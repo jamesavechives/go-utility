@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with the go-utility library. If not, see <http://www.gnu.org/licenses/>.
 
-package ethapi
+package uncapi
 
 import (
 	"context"
@@ -656,7 +656,7 @@ type StorageResult struct {
 	Proof []string     `json:"proof"`
 }
 
-// proofList implements ethdb.KeyValueWriter and collects the proofs as
+// proofList implements uncdb.KeyValueWriter and collects the proofs as
 // hex-strings for delivery to rpc-caller.
 type proofList []string
 
@@ -1074,7 +1074,7 @@ func doCall(ctx context.Context, b Backend, args TransactionArgs, state *state.S
 	// this makes sure resources are cleaned up.
 	defer cancel()
 
-	// Get a new instance of the EVM.
+	// Get a new instance of the UVM.
 	msg, err := args.ToMessage(globalGasCap, header.BaseFee)
 	if err != nil {
 		return nil, err
@@ -1083,24 +1083,24 @@ func doCall(ctx context.Context, b Backend, args TransactionArgs, state *state.S
 	if blockOverrides != nil {
 		blockOverrides.Apply(&blockCtx)
 	}
-	evm, vmError := b.GetEVM(ctx, msg, state, header, &vm.Config{NoBaseFee: true}, &blockCtx)
+	uvm, vmError := b.GetEVM(ctx, msg, state, header, &vm.Config{NoBaseFee: true}, &blockCtx)
 
-	// Wait for the context to be done and cancel the evm. Even if the
-	// EVM has finished, cancelling may be done (repeatedly)
+	// Wait for the context to be done and cancel the uvm. Even if the
+	// UVM has finished, cancelling may be done (repeatedly)
 	go func() {
 		<-ctx.Done()
-		evm.Cancel()
+		uvm.Cancel()
 	}()
 
 	// Execute the message.
 	gp := new(core.GasPool).AddGas(math.MaxUint64)
-	result, err := core.ApplyMessage(evm, msg, gp)
+	result, err := core.ApplyMessage(uvm, msg, gp)
 	if err := vmError(); err != nil {
 		return nil, err
 	}
 
 	// If the timer caused an abort, return an appropriate error message
-	if evm.Cancelled() {
+	if uvm.Cancelled() {
 		return nil, fmt.Errorf("execution aborted (timeout = %v)", timeout)
 	}
 	if err != nil {
@@ -1110,7 +1110,7 @@ func doCall(ctx context.Context, b Backend, args TransactionArgs, state *state.S
 }
 
 func DoCall(ctx context.Context, b Backend, args TransactionArgs, blockNrOrHash rpc.BlockNumberOrHash, overrides *StateOverride, blockOverrides *BlockOverrides, timeout time.Duration, globalGasCap uint64) (*core.ExecutionResult, error) {
-	defer func(start time.Time) { log.Debug("Executing EVM call finished", "runtime", time.Since(start)) }(time.Now())
+	defer func(start time.Time) { log.Debug("Executing UVM call finished", "runtime", time.Since(start)) }(time.Now())
 
 	state, header, err := b.StateAndHeaderByNumberOrHash(ctx, blockNrOrHash)
 	if state == nil || err != nil {
@@ -1132,7 +1132,7 @@ func newRevertError(result *core.ExecutionResult) *revertError {
 	}
 }
 
-// revertError is an API error that encompasses an EVM revertal with JSON error
+// revertError is an API error that encompasses an UVM revertal with JSON error
 // code and a binary data blob.
 type revertError struct {
 	error
@@ -1140,7 +1140,7 @@ type revertError struct {
 }
 
 // ErrorCode returns the JSON error code for a revertal.
-// See: https://github.com/utility/wiki/wiki/JSON-RPC-Error-Codes-Improvement-Proposal
+// See: https://github.com/ethereum/wiki/wiki/JSON-RPC-Error-Codes-Improvement-Proposal
 func (e *revertError) ErrorCode() int {
 	return 3
 }
@@ -1955,7 +1955,7 @@ func (s *TransactionAPI) SendRawTransaction(ctx context.Context, input hexutil.B
 //
 // The account associated with addr must be unlocked.
 //
-// https://github.com/utility/wiki/wiki/JSON-RPC#eth_sign
+// https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_sign
 func (s *TransactionAPI) Sign(addr common.Address, data hexutil.Bytes) (hexutil.Bytes, error) {
 	// Look up the wallet containing the requested signer
 	account := accounts.Account{Address: addr}

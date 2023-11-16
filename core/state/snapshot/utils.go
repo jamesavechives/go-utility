@@ -24,13 +24,13 @@ import (
 	"github.com/yanhuangpai/go-utility/common"
 	"github.com/yanhuangpai/go-utility/core/rawdb"
 	"github.com/yanhuangpai/go-utility/core/types"
-	"github.com/yanhuangpai/go-utility/ethdb"
 	"github.com/yanhuangpai/go-utility/log"
+	"github.com/yanhuangpai/go-utility/uncdb"
 )
 
 // CheckDanglingStorage iterates the snap storage data, and verifies that all
 // storage also has corresponding account data.
-func CheckDanglingStorage(chaindb ethdb.KeyValueStore) error {
+func CheckDanglingStorage(chaindb uncdb.KeyValueStore) error {
 	if err := checkDanglingDiskStorage(chaindb); err != nil {
 		log.Error("Database check error", "err", err)
 	}
@@ -39,7 +39,7 @@ func CheckDanglingStorage(chaindb ethdb.KeyValueStore) error {
 
 // checkDanglingDiskStorage checks if there is any 'dangling' storage data in the
 // disk-backed snapshot layer.
-func checkDanglingDiskStorage(chaindb ethdb.KeyValueStore) error {
+func checkDanglingDiskStorage(chaindb uncdb.KeyValueStore) error {
 	var (
 		lastReport = time.Now()
 		start      = time.Now()
@@ -72,7 +72,7 @@ func checkDanglingDiskStorage(chaindb ethdb.KeyValueStore) error {
 
 // checkDanglingMemStorage checks if there is any 'dangling' storage in the journalled
 // snapshot difflayers.
-func checkDanglingMemStorage(db ethdb.KeyValueStore) error {
+func checkDanglingMemStorage(db uncdb.KeyValueStore) error {
 	start := time.Now()
 	log.Info("Checking dangling journalled storage")
 	err := iterateJournal(db, func(pRoot, root common.Hash, destructs map[common.Hash]struct{}, accounts map[common.Hash][]byte, storage map[common.Hash]map[common.Hash][]byte) error {
@@ -93,7 +93,7 @@ func checkDanglingMemStorage(db ethdb.KeyValueStore) error {
 
 // CheckJournalAccount shows information about an account, from the disk layer and
 // up through the diff layers.
-func CheckJournalAccount(db ethdb.KeyValueStore, hash common.Hash) error {
+func CheckJournalAccount(db uncdb.KeyValueStore, hash common.Hash) error {
 	// Look up the disk layer first
 	baseRoot := rawdb.ReadSnapshotRoot(db)
 	fmt.Printf("Disklayer: Root: %x\n", baseRoot)

@@ -41,10 +41,10 @@ import (
 	"github.com/yanhuangpai/go-utility/core/types"
 	"github.com/yanhuangpai/go-utility/crypto"
 	"github.com/yanhuangpai/go-utility/crypto/kzg4844"
-	"github.com/yanhuangpai/go-utility/ethdb/memorydb"
 	"github.com/yanhuangpai/go-utility/log"
 	"github.com/yanhuangpai/go-utility/params"
 	"github.com/yanhuangpai/go-utility/rlp"
+	"github.com/yanhuangpai/go-utility/uncdb/memorydb"
 )
 
 var (

@@ -24,14 +24,14 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/yanhuangpai/go-utility/cmd/evm/internal/t8ntool"
+	"github.com/yanhuangpai/go-utility/cmd/uvm/internal/t8ntool"
 	"github.com/yanhuangpai/go-utility/internal/cmdtest"
 	"github.com/yanhuangpai/go-utility/internal/reexec"
 )
 
 func TestMain(m *testing.M) {
 	// Run the app if we've been exec'd as "ethkey-test" in runEthkey.
-	reexec.Register("evm-test", func() {
+	reexec.Register("uvm-test", func() {
 		if err := app.Run(os.Args); err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			os.Exit(1)
@@ -296,7 +296,7 @@ func TestT8n(t *testing.T) {
 			}
 		}
 		tt.Logf("args: %v\n", strings.Join(qArgs, " "))
-		tt.Run("evm-test", args...)
+		tt.Run("uvm-test", args...)
 		// Compare the expected output, if provided
 		if tc.expOut != "" {
 			file := fmt.Sprintf("%v/%v", tc.base, tc.expOut)
@@ -398,7 +398,7 @@ func TestT9n(t *testing.T) {
 		args := []string{"t9n"}
 		args = append(args, tc.input.get(tc.base)...)
 
-		tt.Run("evm-test", args...)
+		tt.Run("uvm-test", args...)
 		tt.Logf("args:\n go run . %v\n", strings.Join(args, " "))
 		// Compare the expected output, if provided
 		if tc.expOut != "" {
@@ -532,7 +532,7 @@ func TestB11r(t *testing.T) {
 		args := []string{"b11r"}
 		args = append(args, tc.input.get(tc.base)...)
 
-		tt.Run("evm-test", args...)
+		tt.Run("uvm-test", args...)
 		tt.Logf("args:\n go run . %v\n", strings.Join(args, " "))
 		// Compare the expected output, if provided
 		if tc.expOut != "" {

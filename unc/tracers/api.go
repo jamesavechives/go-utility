@@ -35,13 +35,13 @@ import (
 	"github.com/yanhuangpai/go-utility/core/state"
 	"github.com/yanhuangpai/go-utility/core/types"
 	"github.com/yanhuangpai/go-utility/core/vm"
-	"github.com/yanhuangpai/go-utility/ethdb"
-	"github.com/yanhuangpai/go-utility/internal/ethapi"
+	"github.com/yanhuangpai/go-utility/internal/uncapi"
 	"github.com/yanhuangpai/go-utility/log"
 	"github.com/yanhuangpai/go-utility/params"
 	"github.com/yanhuangpai/go-utility/rlp"
 	"github.com/yanhuangpai/go-utility/rpc"
 	"github.com/yanhuangpai/go-utility/unc/tracers/logger"
+	"github.com/yanhuangpai/go-utility/uncdb"
 )
 
 const (
@@ -84,7 +84,7 @@ type Backend interface {
 	RPCGasCap() uint64
 	ChainConfig() *params.ChainConfig
 	Engine() consensus.Engine
-	ChainDb() ethdb.Database
+	ChainDb() uncdb.Database
 	StateAtBlock(ctx context.Context, block *types.Block, reexec uint64, base *state.StateDB, readOnly bool, preferDisk bool) (*state.StateDB, StateReleaseFunc, error)
 	StateAtTransaction(ctx context.Context, block *types.Block, txIndex int, reexec uint64) (*core.Message, vm.BlockContext, *state.StateDB, StateReleaseFunc, error)
 }
@@ -99,10 +99,10 @@ func NewAPI(backend Backend) *API {
 	return &API{backend: backend}
 }
 
-// chainContext constructs the context reader which is used by the evm for reading
+// chainContext constructs the context reader which is used by the uvm for reading
 // the necessary chain context.
 func (api *API) chainContext(ctx context.Context) core.ChainContext {
-	return ethapi.NewChainContext(ctx, api.backend)
+	return uncapi.NewChainContext(ctx, api.backend)
 }
 
 // blockByNumber is the wrapper of the chain access function offered by the backend.
@@ -162,8 +162,8 @@ type TraceConfig struct {
 // field to override the state for tracing.
 type TraceCallConfig struct {
 	TraceConfig
-	StateOverrides *ethapi.StateOverride
-	BlockOverrides *ethapi.BlockOverrides
+	StateOverrides *uncapi.StateOverride
+	BlockOverrides *uncapi.BlockOverrides
 }
 
 // StdTraceConfig holds extra parameters to standard-json trace functions.
@@ -204,7 +204,7 @@ type txTraceTask struct {
 	index   int            // Transaction offset in the block
 }
 
-// TraceChain returns the structured logs created during the execution of EVM
+// TraceChain returns the structured logs created during the execution of UVM
 // between two blocks (excluding start) and returns them as a JSON object.
 func (api *API) TraceChain(ctx context.Context, start, end rpc.BlockNumber, config *TraceConfig) (*rpc.Subscription, error) { // Fetch the block interval that we want to trace
 	from, err := api.blockByNumber(ctx, start)
@@ -429,7 +429,7 @@ func (api *API) traceChain(start, end *types.Block, config *TraceConfig, closed 
 }
 
 // TraceBlockByNumber returns the structured logs created during the execution of
-// EVM and returns them as a JSON object.
+// UVM and returns them as a JSON object.
 func (api *API) TraceBlockByNumber(ctx context.Context, number rpc.BlockNumber, config *TraceConfig) ([]*txTraceResult, error) {
 	block, err := api.blockByNumber(ctx, number)
 	if err != nil {
@@ -439,7 +439,7 @@ func (api *API) TraceBlockByNumber(ctx context.Context, number rpc.BlockNumber, 
 }
 
 // TraceBlockByHash returns the structured logs created during the execution of
-// EVM and returns them as a JSON object.
+// UVM and returns them as a JSON object.
 func (api *API) TraceBlockByHash(ctx context.Context, hash common.Hash, config *TraceConfig) ([]*txTraceResult, error) {
 	block, err := api.blockByHash(ctx, hash)
 	if err != nil {
@@ -448,7 +448,7 @@ func (api *API) TraceBlockByHash(ctx context.Context, hash common.Hash, config *
 	return api.traceBlock(ctx, block, config)
 }
 
-// TraceBlock returns the structured logs created during the execution of EVM
+// TraceBlock returns the structured logs created during the execution of UVM
 // and returns them as a JSON object.
 func (api *API) TraceBlock(ctx context.Context, blob hexutil.Bytes, config *TraceConfig) ([]*txTraceResult, error) {
 	block := new(types.Block)
@@ -459,7 +459,7 @@ func (api *API) TraceBlock(ctx context.Context, blob hexutil.Bytes, config *Trac
 }
 
 // TraceBlockFromFile returns the structured logs created during the execution of
-// EVM and returns them as a JSON object.
+// UVM and returns them as a JSON object.
 func (api *API) TraceBlockFromFile(ctx context.Context, file string, config *TraceConfig) ([]*txTraceResult, error) {
 	blob, err := os.ReadFile(file)
 	if err != nil {
@@ -469,7 +469,7 @@ func (api *API) TraceBlockFromFile(ctx context.Context, file string, config *Tra
 }
 
 // TraceBadBlock returns the structured logs created during the execution of
-// EVM against a block pulled from the pool of bad ones and returns them as a JSON
+// UVM against a block pulled from the pool of bad ones and returns them as a JSON
 // object.
 func (api *API) TraceBadBlock(ctx context.Context, hash common.Hash, config *TraceConfig) ([]*txTraceResult, error) {
 	block := rawdb.ReadBadBlock(api.backend.ChainDb(), hash)
@@ -480,7 +480,7 @@ func (api *API) TraceBadBlock(ctx context.Context, hash common.Hash, config *Tra
 }
 
 // StandardTraceBlockToFile dumps the structured logs created during the
-// execution of EVM to the local file system and returns a list of files
+// execution of UVM to the local file system and returns a list of files
 // to the caller.
 func (api *API) StandardTraceBlockToFile(ctx context.Context, hash common.Hash, config *StdTraceConfig) ([]string, error) {
 	block, err := api.blockByHash(ctx, hash)
@@ -553,7 +553,7 @@ func (api *API) IntermediateRoots(ctx context.Context, hash common.Hash, config 
 }
 
 // StandardTraceBadBlockToFile dumps the structured logs created during the
-// execution of EVM against a block pulled from the pool of bad ones to the
+// execution of UVM against a block pulled from the pool of bad ones to the
 // local file system and returns a list of files to the caller.
 func (api *API) StandardTraceBadBlockToFile(ctx context.Context, hash common.Hash, config *StdTraceConfig) ([]string, error) {
 	block := rawdb.ReadBadBlock(api.backend.ChainDb(), hash)
@@ -822,7 +822,7 @@ func containsTx(block *types.Block, hash common.Hash) bool {
 	return false
 }
 
-// TraceTransaction returns the structured logs created during the execution of EVM
+// TraceTransaction returns the structured logs created during the execution of UVM
 // and returns them as a JSON object.
 func (api *API) TraceTransaction(ctx context.Context, hash common.Hash, config *TraceConfig) (interface{}, error) {
 	tx, blockHash, blockNumber, index, err := api.backend.GetTransaction(ctx, hash)
@@ -861,9 +861,9 @@ func (api *API) TraceTransaction(ctx context.Context, hash common.Hash, config *
 }
 
 // TraceCall lets you trace a given eth_call. It collects the structured logs
-// created during the execution of EVM if the given transaction was added on
+// created during the execution of UVM if the given transaction was added on
 // top of the provided block and returns them as a JSON object.
-func (api *API) TraceCall(ctx context.Context, args ethapi.TransactionArgs, blockNrOrHash rpc.BlockNumberOrHash, config *TraceCallConfig) (interface{}, error) {
+func (api *API) TraceCall(ctx context.Context, args uncapi.TransactionArgs, blockNrOrHash rpc.BlockNumberOrHash, config *TraceCallConfig) (interface{}, error) {
 	// Try to retrieve the specified block
 	var (
 		err   error
@@ -953,7 +953,7 @@ func (api *API) traceTx(ctx context.Context, message *core.Message, txctx *Conte
 		<-deadlineCtx.Done()
 		if errors.Is(deadlineCtx.Err(), context.DeadlineExceeded) {
 			tracer.Stop(errors.New("execution timeout"))
-			// Stop evm execution. Note cancellation is not necessarily immediate.
+			// Stop uvm execution. Note cancellation is not necessarily immediate.
 			vmenv.Cancel()
 		}
 	}()

@@ -24,12 +24,12 @@ import (
 	"time"
 
 	"github.com/yanhuangpai/go-utility/common/mclock"
-	"github.com/yanhuangpai/go-utility/ethdb"
-	"github.com/yanhuangpai/go-utility/ethdb/memorydb"
 	"github.com/yanhuangpai/go-utility/les/utils"
 	"github.com/yanhuangpai/go-utility/p2p/enode"
 	"github.com/yanhuangpai/go-utility/p2p/enr"
 	"github.com/yanhuangpai/go-utility/p2p/nodestate"
+	"github.com/yanhuangpai/go-utility/uncdb"
+	"github.com/yanhuangpai/go-utility/uncdb/memorydb"
 )
 
 type zeroExpirer struct{}
@@ -44,13 +44,13 @@ func (client balanceTestClient) FreeClientId() string { return "" }
 
 type balanceTestSetup struct {
 	clock *mclock.Simulated
-	db    ethdb.KeyValueStore
+	db    uncdb.KeyValueStore
 	ns    *nodestate.NodeStateMachine
 	setup *serverSetup
 	bt    *balanceTracker
 }
 
-func newBalanceTestSetup(db ethdb.KeyValueStore, posExp, negExp utils.ValueExpirer) *balanceTestSetup {
+func newBalanceTestSetup(db uncdb.KeyValueStore, posExp, negExp utils.ValueExpirer) *balanceTestSetup {
 	// Initialize and customize the setup for the balance testing
 	clock := &mclock.Simulated{}
 	setup := newServerSetup()

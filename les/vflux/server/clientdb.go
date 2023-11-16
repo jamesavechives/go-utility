@@ -24,11 +24,11 @@ import (
 	"github.com/yanhuangpai/go-utility/common"
 	"github.com/yanhuangpai/go-utility/common/lru"
 	"github.com/yanhuangpai/go-utility/common/mclock"
-	"github.com/yanhuangpai/go-utility/ethdb"
 	"github.com/yanhuangpai/go-utility/les/utils"
 	"github.com/yanhuangpai/go-utility/log"
 	"github.com/yanhuangpai/go-utility/p2p/enode"
 	"github.com/yanhuangpai/go-utility/rlp"
+	"github.com/yanhuangpai/go-utility/uncdb"
 )
 
 const (
@@ -56,7 +56,7 @@ var (
 )
 
 type nodeDB struct {
-	db            ethdb.KeyValueStore
+	db            uncdb.KeyValueStore
 	cache         *lru.Cache[string, utils.ExpiredValue]
 	auxbuf        []byte                                              // 37-byte auxiliary buffer for key encoding
 	verbuf        [2]byte                                             // 2-byte auxiliary buffer for db version
@@ -66,7 +66,7 @@ type nodeDB struct {
 	cleanupHook   func() // Test hook used for testing
 }
 
-func newNodeDB(db ethdb.KeyValueStore, clock mclock.Clock) *nodeDB {
+func newNodeDB(db uncdb.KeyValueStore, clock mclock.Clock) *nodeDB {
 	ndb := &nodeDB{
 		db:      db,
 		cache:   lru.NewCache[string, utils.ExpiredValue](balanceCacheLimit),

@@ -24,8 +24,8 @@ import (
 	"time"
 
 	"github.com/yanhuangpai/go-utility/common/mclock"
-	"github.com/yanhuangpai/go-utility/ethdb/memorydb"
 	"github.com/yanhuangpai/go-utility/p2p/enode"
+	"github.com/yanhuangpai/go-utility/uncdb/memorydb"
 
 	"github.com/yanhuangpai/go-utility/les/utils"
 )

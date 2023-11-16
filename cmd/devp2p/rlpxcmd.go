@@ -22,7 +22,7 @@ import (
 	"net"
 
 	"github.com/urfave/cli/v2"
-	"github.com/yanhuangpai/go-utility/cmd/devp2p/internal/ethtest"
+	"github.com/yanhuangpai/go-utility/cmd/devp2p/internal/UncTest"
 	"github.com/yanhuangpai/go-utility/crypto"
 	"github.com/yanhuangpai/go-utility/p2p"
 	"github.com/yanhuangpai/go-utility/p2p/rlpx"
@@ -35,7 +35,7 @@ var (
 		Usage: "RLPx Commands",
 		Subcommands: []*cli.Command{
 			rlpxPingCommand,
-			rlpxEthTestCommand,
+			rlpxUncTestCommand,
 			rlpxSnapTestCommand,
 		},
 	}
@@ -44,11 +44,11 @@ var (
 		Usage:  "ping <node>",
 		Action: rlpxPing,
 	}
-	rlpxEthTestCommand = &cli.Command{
+	rlpxUncTestCommand = &cli.Command{
 		Name:      "unc-test",
 		Usage:     "Runs tests against a node",
 		ArgsUsage: "<node> <chain.rlp> <genesis.json>",
-		Action:    rlpxEthTest,
+		Action:    rlpxUncTest,
 		Flags: []cli.Flag{
 			testPatternFlag,
 			testTAPFlag,
@@ -84,7 +84,7 @@ func rlpxPing(ctx *cli.Context) error {
 	}
 	switch code {
 	case 0:
-		var h ethtest.Hello
+		var h UncTest.Hello
 		if err := rlp.DecodeBytes(data, &h); err != nil {
 			return fmt.Errorf("invalid handshake: %v", err)
 		}
@@ -101,16 +101,16 @@ func rlpxPing(ctx *cli.Context) error {
 	return nil
 }
 
-// rlpxEthTest runs the unc protocol test suite.
-func rlpxEthTest(ctx *cli.Context) error {
+// rlpxUncTest runs the unc protocol test suite.
+func rlpxUncTest(ctx *cli.Context) error {
 	if ctx.NArg() < 3 {
 		exit("missing path to chain.rlp as command-line argument")
 	}
-	suite, err := ethtest.NewSuite(getNodeArg(ctx), ctx.Args().Get(1), ctx.Args().Get(2))
+	suite, err := UncTest.NewSuite(getNodeArg(ctx), ctx.Args().Get(1), ctx.Args().Get(2))
 	if err != nil {
 		exit(err)
 	}
-	return runTests(ctx, suite.EthTests())
+	return runTests(ctx, suite.UncTests())
 }
 
 // rlpxSnapTest runs the snap protocol test suite.
@@ -118,7 +118,7 @@ func rlpxSnapTest(ctx *cli.Context) error {
 	if ctx.NArg() < 3 {
 		exit("missing path to chain.rlp as command-line argument")
 	}
-	suite, err := ethtest.NewSuite(getNodeArg(ctx), ctx.Args().Get(1), ctx.Args().Get(2))
+	suite, err := UncTest.NewSuite(getNodeArg(ctx), ctx.Args().Get(1), ctx.Args().Get(2))
 	if err != nil {
 		exit(err)
 	}

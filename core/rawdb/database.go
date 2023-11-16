@@ -28,18 +28,18 @@ import (
 
 	"github.com/olekukonko/tablewriter"
 	"github.com/yanhuangpai/go-utility/common"
-	"github.com/yanhuangpai/go-utility/ethdb"
-	"github.com/yanhuangpai/go-utility/ethdb/leveldb"
-	"github.com/yanhuangpai/go-utility/ethdb/memorydb"
-	"github.com/yanhuangpai/go-utility/ethdb/pebble"
 	"github.com/yanhuangpai/go-utility/log"
+	"github.com/yanhuangpai/go-utility/uncdb"
+	"github.com/yanhuangpai/go-utility/uncdb/leveldb"
+	"github.com/yanhuangpai/go-utility/uncdb/memorydb"
+	"github.com/yanhuangpai/go-utility/uncdb/pebble"
 )
 
 // freezerdb is a database wrapper that enables freezer data retrievals.
 type freezerdb struct {
 	ancientRoot string
-	ethdb.KeyValueStore
-	ethdb.AncientStore
+	uncdb.KeyValueStore
+	uncdb.AncientStore
 }
 
 // AncientDatadir returns the path of root ancient directory.
@@ -85,7 +85,7 @@ func (frdb *freezerdb) Freeze(threshold uint64) error {
 
 // nofreezedb is a database wrapper that disables freezer data retrievals.
 type nofreezedb struct {
-	ethdb.KeyValueStore
+	uncdb.KeyValueStore
 }
 
 // HasAncient returns an error as we don't have a backing chain freezer.
@@ -119,7 +119,7 @@ func (db *nofreezedb) AncientSize(kind string) (uint64, error) {
 }
 
 // ModifyAncients is not supported.
-func (db *nofreezedb) ModifyAncients(func(ethdb.AncientWriteOp) error) (int64, error) {
+func (db *nofreezedb) ModifyAncients(func(uncdb.AncientWriteOp) error) (int64, error) {
 	return 0, errNotSupported
 }
 
@@ -138,7 +138,7 @@ func (db *nofreezedb) Sync() error {
 	return errNotSupported
 }
 
-func (db *nofreezedb) ReadAncients(fn func(reader ethdb.AncientReaderOp) error) (err error) {
+func (db *nofreezedb) ReadAncients(fn func(reader uncdb.AncientReaderOp) error) (err error) {
 	// Unlike other ancient-related methods, this method does not return
 	// errNotSupported when invoked.
 	// The reason for this is that the caller might want to do several things:
@@ -167,7 +167,7 @@ func (db *nofreezedb) AncientDatadir() (string, error) {
 
 // NewDatabase creates a high level database on top of a given key-value data
 // store without a freezer moving immutable chain segments into cold storage.
-func NewDatabase(db ethdb.KeyValueStore) ethdb.Database {
+func NewDatabase(db uncdb.KeyValueStore) uncdb.Database {
 	return &nofreezedb{KeyValueStore: db}
 }
 
@@ -198,7 +198,7 @@ func resolveChainFreezerDir(ancient string) string {
 // value data store with a freezer moving immutable chain segments into cold
 // storage. The passed ancient indicates the path of root ancient directory
 // where the chain freezer can be opened.
-func NewDatabaseWithFreezer(db ethdb.KeyValueStore, ancient string, namespace string, readonly bool) (ethdb.Database, error) {
+func NewDatabaseWithFreezer(db uncdb.KeyValueStore, ancient string, namespace string, readonly bool) (uncdb.Database, error) {
 	// Create the idle freezer instance
 	frdb, err := newChainFreezer(resolveChainFreezerDir(ancient), namespace, readonly)
 	if err != nil {
@@ -300,20 +300,20 @@ func NewDatabaseWithFreezer(db ethdb.KeyValueStore, ancient string, namespace st
 
 // NewMemoryDatabase creates an ephemeral in-memory key-value database without a
 // freezer moving immutable chain segments into cold storage.
-func NewMemoryDatabase() ethdb.Database {
+func NewMemoryDatabase() uncdb.Database {
 	return NewDatabase(memorydb.New())
 }
 
 // NewMemoryDatabaseWithCap creates an ephemeral in-memory key-value database
 // with an initial starting capacity, but without a freezer moving immutable
 // chain segments into cold storage.
-func NewMemoryDatabaseWithCap(size int) ethdb.Database {
+func NewMemoryDatabaseWithCap(size int) uncdb.Database {
 	return NewDatabase(memorydb.NewWithCap(size))
 }
 
 // NewLevelDBDatabase creates a persistent key-value database without a freezer
 // moving immutable chain segments into cold storage.
-func NewLevelDBDatabase(file string, cache int, handles int, namespace string, readonly bool) (ethdb.Database, error) {
+func NewLevelDBDatabase(file string, cache int, handles int, namespace string, readonly bool) (uncdb.Database, error) {
 	db, err := leveldb.New(file, cache, handles, namespace, readonly)
 	if err != nil {
 		return nil, err
@@ -324,7 +324,7 @@ func NewLevelDBDatabase(file string, cache int, handles int, namespace string, r
 
 // NewPebbleDBDatabase creates a persistent key-value database without a freezer
 // moving immutable chain segments into cold storage.
-func NewPebbleDBDatabase(file string, cache int, handles int, namespace string, readonly, ephemeral bool) (ethdb.Database, error) {
+func NewPebbleDBDatabase(file string, cache int, handles int, namespace string, readonly, ephemeral bool) (uncdb.Database, error) {
 	db, err := pebble.New(file, cache, handles, namespace, readonly, ephemeral)
 	if err != nil {
 		return nil, err
@@ -374,7 +374,7 @@ type OpenOptions struct {
 //	                   +----------------------------------------
 //	db is non-existent |  pebble default  |  specified type
 //	db is existent     |  from db         |  specified type (if compatible)
-func openKeyValueDatabase(o OpenOptions) (ethdb.Database, error) {
+func openKeyValueDatabase(o OpenOptions) (uncdb.Database, error) {
 	// Reject any unsupported database type
 	if len(o.Type) != 0 && o.Type != dbLeveldb && o.Type != dbPebble {
 		return nil, fmt.Errorf("unknown db.engine %v", o.Type)
@@ -403,7 +403,7 @@ func openKeyValueDatabase(o OpenOptions) (ethdb.Database, error) {
 // set on the provided OpenOptions.
 // The passed o.AncientDir indicates the path of root ancient directory where
 // the chain freezer can be opened.
-func Open(o OpenOptions) (ethdb.Database, error) {
+func Open(o OpenOptions) (uncdb.Database, error) {
 	kvdb, err := openKeyValueDatabase(o)
 	if err != nil {
 		return nil, err
@@ -451,7 +451,7 @@ func (s *stat) Count() string {
 
 // InspectDatabase traverses the entire database and checks the size
 // of all different categories of data.
-func InspectDatabase(db ethdb.Database, keyPrefix, keyStart []byte) error {
+func InspectDatabase(db uncdb.Database, keyPrefix, keyStart []byte) error {
 	it := db.NewIterator(keyPrefix, keyStart)
 	defer it.Release()
 
@@ -627,7 +627,7 @@ func InspectDatabase(db ethdb.Database, keyPrefix, keyStart []byte) error {
 }
 
 // printChainMetadata prints out chain metadata to stderr.
-func printChainMetadata(db ethdb.KeyValueStore) {
+func printChainMetadata(db uncdb.KeyValueStore) {
 	fmt.Fprintf(os.Stderr, "Chain metadata\n")
 	for _, v := range ReadChainMetadata(db) {
 		fmt.Fprintf(os.Stderr, "  %s\n", strings.Join(v, ": "))
@@ -638,7 +638,7 @@ func printChainMetadata(db ethdb.KeyValueStore) {
 // ReadChainMetadata returns a set of key/value pairs that contains information
 // about the database chain status. This can be used for diagnostic purposes
 // when investigating the state of the node.
-func ReadChainMetadata(db ethdb.KeyValueStore) [][]string {
+func ReadChainMetadata(db uncdb.KeyValueStore) [][]string {
 	pp := func(val *uint64) string {
 		if val == nil {
 			return "<nil>"

@@ -2,7 +2,7 @@
 # with Go source code. If you know what GOPATH is then you probably
 # don't need to bother with make.
 
-.PHONY: gunc android ios evm all test clean
+.PHONY: gunc android ios uvm all test clean
 
 GOBIN = ./build/bin
 GO ?= latest
